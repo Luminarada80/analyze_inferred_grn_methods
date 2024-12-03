@@ -735,13 +735,21 @@ def main():
                 if description == "Computing accuracy metrics and confusion metrics":
                     accuracy_metrics, confusion_matrix = grn_stats.calculate_accuracy_metrics(
                         processed_ground_truth_dict[method][sample],
-                        processed_inferred_network_dict[method][sample]
+                        processed_inferred_network_dict[method][sample],
+                        )
+                    histogram_ground_truth_dict = {method: processed_ground_truth_dict[method][sample]}
+                    histogram_inferred_network_dict = {method: processed_inferred_network_dict[method][sample]}
+                    plotting.plot_multiple_histogram_with_thresholds(
+                        histogram_ground_truth_dict,
+                        histogram_inferred_network_dict,
+                        save_path=f'./OUTPUT/{method}/{sample}/histogram_with_threshold'
                         )
                     
                 elif description == "Computing randomized metrics":
                     randomized_metrics, randomized_confusion = grn_stats.create_randomized_inference_scores(
                         processed_ground_truth_dict[method][sample],
-                        processed_inferred_network_dict[method][sample]
+                        processed_inferred_network_dict[method][sample],
+                        histogram_save_path=f'./OUTPUT/{method}/{sample}/randomized_histogram_with_threshold'
                     )
                     
                 elif description == "Saving metrics to output files":
@@ -777,6 +785,9 @@ def main():
             randomized_method_dict, f"./OUTPUT/{method.lower()}_randomized_auroc_auprc.png"
         )
 
+    for key, method_dict in total_method_confusion_scores.items():
+        print(method_dict.keys())
+    print(total_method_confusion_scores.keys())
     # Plot combined metrics across all methods
     print(f"\nPlotting AUROC and AUPRC comparing all methods")
     plotting.plot_multiple_method_auroc_auprc(
