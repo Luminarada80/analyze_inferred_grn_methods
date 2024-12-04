@@ -276,6 +276,13 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
     ground_truth = standardize_ground_truth_format(ground_truth)
     ground_truth_dict = create_ground_truth_copies(ground_truth, method_names, sample_names, inferred_network_dict)
     
+    
+
+    print(f'\t\tGround truth network size:')
+    print(f'\t\t\tTFs: {len(set(ground_truth["Source"]))}')
+    print(f'\t\t\tTGs: {len(set(ground_truth["Target"]))}')
+    print(f'\t\t\tEdges: {len(ground_truth["Source"])}')
+    
     processed_inferred_network_dict: dict = {}
     processed_ground_truth_dict: dict = {}
 
@@ -286,6 +293,7 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
         method_samples = [sample for sample in sample_names if sample in inferred_network_dict[method]]
         inferred_networks[method] = {}
         for sample in method_samples:
+            
             inferred_network_file = inferred_network_dict[method][sample]
             sep = ',' if method == 'CELL_ORACLE' else '\t'
             inferred_network_df = load_inferred_network_df(inferred_network_file, sep)
@@ -294,61 +302,65 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
                 inferred_network_df = grn_formatting.create_standard_dataframe(
                     inferred_network_df, source_col='source', target_col='target', score_col='coef_abs'
                 )
+                
             else:
                 inferred_network_df = grn_formatting.create_standard_dataframe(
                     inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
                 )
+                
+            plotting.plot_inference_score_histogram(inferred_network_df, method, f'./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_score_distribution.png')
             inferred_networks[method][sample] = inferred_network_df
 
     # Processing steps
     print(f'\nPreprocessing:')
-    for step, description in enumerate([
-        "Adding inferred scores to ground truth",
-        "Setting scores to log2",
-        "Removing genes from inferred not in ground truth",
-        "Removing ground truth edges from inferred",
-        "Removing NaN values from the inferred network",
-        "Classifying interactions by ground truth threshold"
-    ]):
-        print(f"\tStep {step+1}: {description}")
-        for method in method_names:
-            method_samples = [sample for sample in sample_names if sample in inferred_network_dict[method]]
-            for sample in method_samples:
-                sample_ground_truth = ground_truth_dict[method][sample]
-                inferred_network_df = inferred_networks[method][sample]
-                
-                if description == "Adding inferred scores to ground truth":
-                    sample_ground_truth = grn_formatting.add_inferred_scores_to_ground_truth(
-                        sample_ground_truth, inferred_network_df
-                    )
-                    
-                elif description == "Setting scores to log2":
-                    inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
-                    sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
-                    
-                elif description == "Removing genes from inferred not in ground truth":
-                    inferred_network_df = grn_formatting.remove_tf_tg_not_in_ground_truth(
-                        sample_ground_truth, inferred_network_df
-                    )
-                    
-                elif description == "Removing ground truth edges from inferred":
-                    inferred_network_df = grn_formatting.remove_ground_truth_edges_from_inferred(
-                        sample_ground_truth, inferred_network_df
-                    )
-                    
-                elif description == "Removing NaN values from the inferred network":
-                    inferred_network_df = inferred_network_df.dropna(subset=['Score'])
-                    sample_ground_truth = sample_ground_truth.dropna(subset=['Score'])
-                    
-                elif description == "Classifying interactions by ground truth threshold":
-                    sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
-                        sample_ground_truth, inferred_network_df
-                    )
-                
-                # Update processed data
-                ground_truth_dict[method][sample] = sample_ground_truth
-                inferred_networks[method][sample] = inferred_network_df
+    
+    for method in method_names:
+        method_samples = [sample for sample in sample_names if sample in inferred_network_dict[method]]
+        for sample in method_samples:
+            print(f'\tPreprocessing {method} sample {sample}')
+            sample_ground_truth = ground_truth_dict[method][sample]
+            inferred_network_df = inferred_networks[method][sample]
+            
+            sample_ground_truth = grn_formatting.add_inferred_scores_to_ground_truth(
+                sample_ground_truth, inferred_network_df
+            )
+            
+            inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
+            sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
+            
+            inferred_network_df = inferred_network_df.dropna(subset=['Score'])
+            sample_ground_truth = sample_ground_truth.dropna(subset=['Score'])
+            
+            
+            inferred_network_df = grn_formatting.remove_ground_truth_edges_from_inferred(
+                sample_ground_truth, inferred_network_df
+            )
+            
+            inferred_network_df = grn_formatting.remove_tf_tg_not_in_ground_truth(
+                sample_ground_truth, inferred_network_df
+            )
+            
 
+            
+            sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
+                sample_ground_truth, inferred_network_df
+            )
+               
+            # Update processed data
+            with open(f'./OUTPUT/{method}/{sample}/ground_truth_size_processed.tsv', 'w') as outfile:
+                outfile.write(f'TFs\t{len(set(sample_ground_truth["Source"]))}\n')
+                outfile.write(f'TGs\t{len(set(sample_ground_truth["Target"]))}\n')
+                outfile.write(f'Edges\t{len(sample_ground_truth["Source"])}\n')
+            
+            ground_truth_dict[method][sample] = sample_ground_truth
+            inferred_networks[method][sample] = inferred_network_df
+
+            with open(f'./OUTPUT/{method}/{sample}/inferred_network_size_processed.tsv', 'w') as outfile:
+                outfile.write(f'TFs\t{len(set(inferred_network_df["Source"]))}\n')
+                outfile.write(f'TGs\t{len(set(inferred_network_df["Target"]))}\n')
+                outfile.write(f'Edges\t{len(inferred_network_df["Source"])}\n')
+                
+            inferred_networks[method][sample] = inferred_network_df
     # Finalize processed data
     for method in method_names:
         processed_inferred_network_dict[method] = {}
