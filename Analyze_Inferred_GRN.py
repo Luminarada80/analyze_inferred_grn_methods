@@ -26,148 +26,6 @@ rcParams.update({
     'legend.fontsize': 14  # Legend font size
 })
 
-def plot_resources_by_step(resource_dict: dict, output_dir: str):
-    # Plot the resource requirements by step for each sample
-    plotting.plot_metric_by_step_adjusted(
-        sample_resource_dict=resource_dict,
-        metric='user_time',
-        ylabel='User Time (h) / Percent CPU Usage',
-        title='User Time / Percent CPU Usage by Step for Each Sample',
-        filename=f'{output_dir}/Step_User_Time_Summary.png',
-        divide_by_cpu=True
-    )
-
-    plotting.plot_metric_by_step_adjusted(
-        sample_resource_dict=resource_dict,
-        metric='system_time',
-        ylabel='System Time (h) / Percent CPU Usage',
-        title='System Time / Percent CPU Usage by Step for Each Sample',
-        filename=f'{output_dir}/Step_System_Time.png',
-        divide_by_cpu=True
-    )
-
-    plotting.plot_metric_by_step_adjusted(
-        sample_resource_dict=resource_dict,
-        metric='wall_clock_time',
-        ylabel='Wall Clock Time (h)',
-        title='Wall Clock Time by Step for Each Sample',
-        filename=f'{output_dir}/Step_Wall_Clock_Time.png',
-        divide_by_cpu=False
-    )
-
-    plotting.plot_metric_by_step_adjusted(
-        sample_resource_dict=resource_dict,
-        metric='max_ram',
-        ylabel='Max RAM Usage (GB)',
-        title='Max RAM usage by Step for Each Sample',
-        filename=f'{output_dir}/Step_Max_Ram.png',
-        divide_by_cpu=False
-    )
-
-    plotting.plot_metric_by_step_adjusted(
-        sample_resource_dict=resource_dict,
-        metric='percent_cpu',
-        ylabel='Percent CPU',
-        title='Percent of the CPU Used',
-        filename=f'{output_dir}/Step_Percent_Cpu.png',
-        divide_by_cpu=False
-    )
-
-def plot_resources_by_sample(resource_dict: dict, output_dir: str):
-    # Plot the resource requirements for running the entire pipeline
-    plotting.plot_total_metric_by_sample(
-        sample_resource_dict=resource_dict,
-        metric='user_time',
-        ylabel='Total User Time / Percent CPU Usage',
-        title='Total User Time / Percent CPU Usage for Each Sample',
-        filename=f'{output_dir}/Total_User_Time.png',
-        divide_by_cpu=True
-    )
-
-    plotting.plot_total_metric_by_sample(
-        sample_resource_dict=resource_dict,
-        metric='system_time',
-        ylabel='Total System Time / Percent CPU Usage',
-        title='Total System Time / Percent CPU Usage for Each Sample',
-        filename=f'{output_dir}/Total_System_Time.png',
-        divide_by_cpu=True
-    )
-
-    plotting.plot_total_metric_by_sample(
-        sample_resource_dict=resource_dict,
-        metric='wall_clock_time',
-        ylabel='Wall Clock Time (h)',
-        title='Total Wall Clock Time',
-        filename=f'{output_dir}/Total_Wall_Clock_Time.png',
-        divide_by_cpu=False
-    )
-
-    plotting.plot_total_metric_by_sample(
-        sample_resource_dict=resource_dict,
-        metric='max_ram',
-        ylabel='Max RAM Usage (GB)',
-        title='Max RAM usage',
-        filename=f'{output_dir}/Total_Max_Ram.png',
-        divide_by_cpu=False
-    )
-
-    plotting.plot_total_metric_by_sample(
-        sample_resource_dict=resource_dict,
-        metric='max_ram',
-        ylabel='Max RAM Usage (GB)',
-        title='Max RAM usage',
-        filename=f'{output_dir}/Total_Max_Ram.png',
-        divide_by_cpu=False
-    )
-
-    plotting.plot_total_metric_by_sample(
-        sample_resource_dict=resource_dict,
-        metric='percent_cpu',
-        ylabel='Percent CPU',
-        title='Average Percent of the CPU Used',
-        filename=f'{output_dir}/Total_Percent_Cpu.png',
-        divide_by_cpu=False
-    )
-
-def create_resource_requirement_summary(resource_dict: dict, output_dir: str) -> None:
-    """
-    Creates a summary file of each step for each sample from the output of the time module.
-
-    Parameters
-    ----------
-        resource_dict (dict): 
-            A dictionary containing the resources used for each step for each sample.
-        output_dir (str): 
-            The path to the directory in which to output the summary .tsv file
-    """
-    summary_dict = {}
-
-    for sample, step_dict in resource_dict.items():
-        if sample not in summary_dict:
-            summary_dict[sample] = {
-                    "user_time": 0,
-                    "system_time": 0,
-                    "percent_cpu": [],
-                    "wall_clock_time": 0,
-                    "max_ram": []
-                }
-        for step, sample_resource_dict in step_dict.items():
-            for resource_name, resource_value in sample_resource_dict.items():
-                if resource_name == "percent_cpu":
-                    summary_dict[sample][resource_name].append(round(resource_value,2))
-                elif resource_name == "max_ram":
-                    summary_dict[sample][resource_name].append(round(resource_value,2))
-                else:
-                    summary_dict[sample][resource_name] += round(resource_value,2)
-        summary_dict[sample]["max_ram"] = max(summary_dict[sample]["max_ram"])
-        summary_dict[sample]["percent_cpu"] = round(sum(summary_dict[sample]["percent_cpu"]) / len(summary_dict[sample]["percent_cpu"]),2)
-        
-    summary_df = pd.DataFrame(summary_dict)
-    summary_df = summary_df.reindex(sorted(summary_df.columns), axis=1)
-    print(summary_df.head())
-
-    summary_df.to_csv(f'{output_dir}/Resource_Summary.tsv', sep='\t')
-
 def read_input_files() -> tuple[str, list, list, dict]:
     """
     Reads through the current directory to find input files.
@@ -366,201 +224,6 @@ def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict) -> None:
         total_accuracy_metrics_df = pd.DataFrame(total_accuracy_metric_dict[method]).T
         total_accuracy_metrics_df.to_csv(f'OUTPUT/{method.lower()}_total_accuracy_metrics.tsv', sep='\t')
 
-def update_metrics(
-    confusion_score_dict: dict,
-    randomized_dict: dict,
-    method: str,
-    confusion_matrix_dict: dict,
-    randomized_confusion_matrix_dict: dict
-    ) -> None:
-    """
-    Adds y_true and y_scores to the total method dictionary used for generating the AUROC and AUPRC curves.
-
-    Parameters
-    ----------
-        confusion_score_dict (dict):
-            A dictionary containing lists of y_true and y_scores for each sample in a method.
-            Used to generate multiple AUROC and AUPRC curves on the same plot for multiple methods.
-        randomized_dict (dict):
-            A dictionary of randomized y_true and y_scores values between the ground truth and inferred
-            network, to show how much better the inference method performs above random. 
-        method (str):
-            The name of the inference method. 
-        confusion_matrix_dict (dict):
-            A dictionary containing the confusion matrix, y_true array, and y_scores array. Generated by 
-            grn_stats.calculate_accuracy_metrics.
-        randomized_confusion_matrix_dict (dict): 
-            A dictionary containing the confusion matrix, y_true array, and y_scores array for the randomized
-            values. Generated by grn_stats.create_randomized_inference_scores.
-    """
-    # Update scores for plotting
-    confusion_score_dict[method]["y_true"].append(confusion_matrix_dict["y_true"])
-    confusion_score_dict[method]["y_scores"].append(confusion_matrix_dict["y_scores"])
-
-    randomized_dict[f"{method} Original"]["y_true"].append(confusion_matrix_dict["y_true"])
-    randomized_dict[f"{method} Original"]["y_scores"].append(confusion_matrix_dict["y_scores"])
-    randomized_dict[f"{method} Randomized"]["y_true"].append(randomized_confusion_matrix_dict["y_true"])
-    randomized_dict[f"{method} Randomized"]["y_scores"].append(randomized_confusion_matrix_dict["y_scores"])
-
-def log_auroc_auprc(
-    confusion_matrix_dict: dict,
-    randomized_confusion_dict: dict
-    ) -> tuple[float, float, float, float]:
-    """
-    Calculates the normal and randomized AUROC and AUPRC values from
-    confusion_matrix_dict and randomized_confusion_dict.
-
-    Parameters
-    ----------
-        confusion_matrix_dict (_type_): _description_
-        randomized_confusion (_type_): _description_
-
-    Return
-    ----------
-        auroc (float):
-            The AUROC value for the sample.
-        randomized_auroc (float): 
-            The AUROC value for the randomized edge scores for the sample.
-        auprc (float):
-            The AUPRC value for the sample.
-        randomized_auprc (float):
-            The AUPRC value for the randomized edge scores for the sample
-    """
-    auroc = grn_stats.calculate_auroc(confusion_matrix_dict)
-    randomized_auroc = grn_stats.calculate_auroc(randomized_confusion_dict)
-
-    auprc = grn_stats.calculate_auprc(confusion_matrix_dict)
-    randomized_auprc = grn_stats.calculate_auprc(randomized_confusion_dict)
-
-    return auroc, randomized_auroc, auprc, randomized_auprc
-
-def plot_sample_metrics(
-    method: str,
-    sample: str,
-    confusion_matrix_dict: dict,
-    randomized_confusion_dict: dict
-    ) -> None:
-    """
-    Plots both the normal AUROC and AUPRC for the sample, and the normal vs randomized AUROC and AUPRC.
-
-    Args:
-        method (str): 
-            The name of the inference method.
-        sample (str): 
-            The name of the sample
-        confusion_matrix_dict (dict): 
-            The confusion matrix dictionary for the sample with y_true and y_scores (from 
-            grn_stats.calculate_accuracy_metrics)
-        randomized_confusion_dict (dict): 
-            The confusion matrix dictionary for the sample with y_true and y_scores (from 
-            grn_stats.create_randomized_inference_scores)
-    """
-    # Plot normal AUROC and AUPRC
-    confusion_with_method = {method: confusion_matrix_dict}
-    plotting.plot_auroc_auprc(confusion_with_method, f"./OUTPUT/{method}/{sample}/auroc_auprc.png")
-
-    # Plot randomized AUROC and AUPRC
-    randomized_with_method = {
-        f"{method} Original": {"y_true": confusion_matrix_dict["y_true"], "y_scores": confusion_matrix_dict["y_scores"]},
-        f"{method} Randomized": {"y_true": randomized_confusion_dict["y_true"], "y_scores": randomized_confusion_dict["y_scores"]},
-    }
-    plotting.plot_auroc_auprc(randomized_with_method, f"./OUTPUT/{method}/{sample}/randomized_auroc_auprc.png")
-
-def write_metrics_to_file(
-    method: str,
-    sample: str,
-    accuracy_metrics: dict,
-    randomized_metrics: dict
-    ) -> None:
-    """
-    Writes the accuracy metrics for the normal and randomized edge scores to tsv files in the sample output directory.
-
-    Parameters
-    ----------
-        method (str):
-            The name of the inference method.
-        sample (str):
-            The name of the sample.
-        accuracy_metrics (dict): 
-            A dictionary of accuracy metric names with resulting scores.
-        randomized_metrics (dict): 
-            A dictionary of the accuracy metrics calculated from the randomized edge scores.
-    """
-    # Write normal accuracy metrics
-    with open(f"./OUTPUT/{method.upper()}/{sample.upper()}/accuracy_metrics.tsv", "w") as file:
-        file.write("Metric\tScore\n")
-        for metric_name, score in accuracy_metrics.items():
-            file.write(f"{metric_name}\t{score:.4f}\n")
-
-    # Write randomized accuracy metrics
-    with open(f"./OUTPUT/{method.upper()}/{sample.upper()}/randomized_accuracy_metrics.tsv", "w") as file:
-        file.write("Metric\tOriginal Score\tRandomized Score\n")
-        for metric_name, score in accuracy_metrics.items():
-            file.write(f"{metric_name}\t{score:.4f}\t{randomized_metrics[metric_name]:.4f}\n")
-
-def update_accuracy_metrics(
-    total_metrics, random_metrics,
-    method, sample,
-    auroc, auprc, randomized_auroc, randomized_auprc,
-    confusion_matrix, randomized_confusion_matrix
-):
-    """
-    Updates the total and randomized accuracy metric dictionaries for a given method and sample.
-
-    Parameters:
-    ----------
-    total_metrics : dict
-        Dictionary to store the original metrics for each method and sample.
-    random_metrics : dict
-        Dictionary to store the randomized metrics for each method and sample.
-    method : str
-        The name of the method being processed.
-    sample : str
-        The name of the sample being processed.
-    auroc : float
-        AUROC for the original data.
-    auprc : float
-        AUPRC for the original data.
-    randomized_auroc : float
-        AUROC for the randomized data.
-    randomized_auprc : float
-        AUPRC for the randomized data.
-    confusion_matrix : dict
-        Confusion matrix for the original data.
-    randomized_confusion_matrix : dict
-        Confusion matrix for the randomized data.
-    """
-    # Ensure nested dictionaries exist for the method and sample
-    if method not in total_metrics:
-        total_metrics[method] = {}
-    if sample not in total_metrics[method]:
-        total_metrics[method][sample] = {}
-
-    if method not in random_metrics:
-        random_metrics[method] = {}
-    if sample not in random_metrics[method]:
-        random_metrics[method][sample] = {}
-
-    # Update total accuracy metrics
-    total_metrics[method][sample].update({
-        "auroc": auroc,
-        "auprc": auprc,
-        "true_positive": int(confusion_matrix["true_positive"]),
-        "true_negative": int(confusion_matrix["true_negative"]),
-        "false_positive": int(confusion_matrix["false_positive"]),
-        "false_negative": int(confusion_matrix["false_negative"]),
-    })
-
-    # Update randomized accuracy metrics
-    random_metrics[method][sample].update({
-        "auroc": randomized_auroc,
-        "auprc": randomized_auprc,
-        "true_positive": int(randomized_confusion_matrix["true_positive"]),
-        "true_negative": int(randomized_confusion_matrix["true_negative"]),
-        "false_positive": int(randomized_confusion_matrix["false_positive"]),
-        "false_negative": int(randomized_confusion_matrix["false_negative"]),
-    })
-
 def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_names, sample_names, inferred_network_dict):
     """
     Preprocesses the ground truth and inferred networks for each sample in each method, 
@@ -698,109 +361,119 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
     return processed_ground_truth_dict, processed_inferred_network_dict
 
 def main():
-    print(f"Reading input files")
+    print(f'Reading input files')
     ground_truth_path, method_names, sample_names, inferred_network_dict = read_input_files()
-
-    print(f"\nLoading and Standardizing networks")
-    processed_ground_truth_dict, processed_inferred_network_dict = preprocess_inferred_and_ground_truth_networks(
-        ground_truth_path, method_names, sample_names, inferred_network_dict
-    )
-
+    
+    print(f'Preprocessing inferred and ground truth networks')
+    processed_ground_truth_dict, processed_inferred_network_dict = preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_names, sample_names, inferred_network_dict)
+    
     total_method_confusion_scores = {}
     total_accuracy_metrics = {}
     random_accuracy_metrics = {}
-
     for method, sample_dict in processed_inferred_network_dict.items():
-        print(f"\nCalculating Statistics for {method}")
-        total_method_confusion_scores[method] = {"y_true": [], "y_scores": []}
+        print(method)
+        total_method_confusion_scores[method] = {'y_true':[], 'y_scores':[]}
         randomized_method_dict = {
-            f"{method} Original": {"y_true": [], "y_scores": []},
-            f"{method} Randomized": {"y_true": [], "y_scores": []},
-        }
+                f"{method} Original": {'y_true':[], 'y_scores':[]},
+                f"{method} Randomized": {'y_true':[], 'y_scores':[]}
+            }
         total_accuracy_metrics[method] = {}
         random_accuracy_metrics[method] = {}
+        
+        for sample in sample_dict:   
+            print(f'\t{sample}')             
+            total_accuracy_metrics[method][sample] = {}
+            random_accuracy_metrics[method][sample] = {}
+            processed_ground_truth_df = processed_ground_truth_dict[method][sample]
+            processed_inferred_network_df = processed_inferred_network_dict[method][sample]
 
-        # Logging steps for processing
-        for step, description in enumerate([
-            "Computing accuracy metrics and confusion metrics",
-            "Computing randomized metrics",
-            "Saving metrics to output files",
-            "Computing AUROC and AUPRC",
-            "Updating confusion scores and accuracy metrics",
-            "Plotting AUROC and AUPRC metrics for the sample",
-        ]):
-            print(f"\tStep {step+1}: {description}")
-            for sample in sample_dict:
-                # Perform the specific step
-                if description == "Computing accuracy metrics and confusion metrics":
-                    accuracy_metrics, confusion_matrix = grn_stats.calculate_accuracy_metrics(
-                        processed_ground_truth_dict[method][sample],
-                        processed_inferred_network_dict[method][sample],
-                        )
-                    histogram_ground_truth_dict = {method: processed_ground_truth_dict[method][sample]}
-                    histogram_inferred_network_dict = {method: processed_inferred_network_dict[method][sample]}
-                    plotting.plot_multiple_histogram_with_thresholds(
-                        histogram_ground_truth_dict,
-                        histogram_inferred_network_dict,
-                        save_path=f'./OUTPUT/{method}/{sample}/histogram_with_threshold'
-                        )
-                    
-                elif description == "Computing randomized metrics":
-                    randomized_metrics, randomized_confusion = grn_stats.create_randomized_inference_scores(
-                        processed_ground_truth_dict[method][sample],
-                        processed_inferred_network_dict[method][sample],
-                        histogram_save_path=f'./OUTPUT/{method}/{sample}/randomized_histogram_with_threshold'
-                    )
-                    
-                elif description == "Saving metrics to output files":
-                    write_metrics_to_file(
-                        method, sample, accuracy_metrics, randomized_metrics
-                    )
-                    
-                elif description == "Computing AUROC and AUPRC":
-                    auroc, randomized_auroc, auprc, randomized_auprc = log_auroc_auprc(
-                        confusion_matrix, randomized_confusion
-                    )
-                    
-                elif description == "Updating confusion scores and accuracy metrics":
-                    update_metrics(
-                        total_method_confusion_scores, randomized_method_dict,
-                        method, confusion_matrix, randomized_confusion
-                    )
-                    
-                    update_accuracy_metrics(
-                        total_accuracy_metrics, random_accuracy_metrics,
-                        method, sample, auroc, auprc, randomized_auroc, randomized_auprc,
-                        confusion_matrix, randomized_confusion
-                    )
-                    
-                elif description == "Plotting AUROC and AUPRC metrics for the sample":
-                    plot_sample_metrics(
-                        method, sample, confusion_matrix, randomized_confusion
-                    )
 
-        # Plot aggregated metrics for the current method
-        print(f"\tStep 7: Plotting {method.lower()} original vs randomized AUROC and AUPRC for all samples")
-        plotting.plot_multiple_method_auroc_auprc(
-            randomized_method_dict, f"./OUTPUT/{method.lower()}_randomized_auroc_auprc.png"
-        )
+            accuracy_metric_dict, confusion_matrix_score_dict = grn_stats.calculate_accuracy_metrics(
+                processed_ground_truth_df,
+                processed_inferred_network_df
+                )
+            
+            histogram_ground_truth_dict = {method: processed_ground_truth_dict[method][sample]}
+            histogram_inferred_network_dict = {method: processed_inferred_network_dict[method][sample]}
+            plotting.plot_multiple_histogram_with_thresholds(
+                histogram_ground_truth_dict,
+                histogram_inferred_network_dict,
+                save_path=f'./OUTPUT/{method}/{sample}/histogram_with_threshold'
+                )
+        
+            randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
+                processed_ground_truth_df,
+                processed_inferred_network_df,
+                histogram_save_path=f'./OUTPUT/{method}/{sample}/randomized_histogram_with_threshold'
+                )
 
-    for key, method_dict in total_method_confusion_scores.items():
-        print(method_dict.keys())
-    print(total_method_confusion_scores.keys())
-    # Plot combined metrics across all methods
-    print(f"\nPlotting AUROC and AUPRC comparing all methods")
-    plotting.plot_multiple_method_auroc_auprc(
-        total_method_confusion_scores, "./OUTPUT/auroc_auprc_combined.png"
-    )
+            # Write out the accuracy metrics to a tsv file
+            with open(f'./OUTPUT/{method.upper()}/{sample.upper()}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
+                accuracy_metric_file.write(f'Metric\tScore\n')
+                for metric_name, score in accuracy_metric_dict.items():
+                    accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
+                    total_accuracy_metrics[method][sample][metric_name] = score
+            
+            # Write out the randomized accuracy metrics to a tsv file
+            with open(f'./OUTPUT/{method.upper()}/{sample.upper()}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
+                random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
+                for metric_name, score in accuracy_metric_dict.items():
+                    random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{randomized_accuracy_metric_dict[metric_name]:4f}\n')
+                    random_accuracy_metrics[method][sample][metric_name] = randomized_accuracy_metric_dict[metric_name]
+        
+            # Calculate the AUROC and randomized AUROC
+            auroc = grn_stats.calculate_auroc(confusion_matrix_score_dict)
+            randomized_auroc = grn_stats.calculate_auroc(randomized_confusion_matrix_dict)
+            
+            # Calculate the AUPRC and randomized AUPRC
+            auprc = grn_stats.calculate_auprc(confusion_matrix_score_dict)
+            randomized_auprc = grn_stats.calculate_auprc(randomized_confusion_matrix_dict)
+        
+            # Plot the normal and randomized AUROC and AUPRC for the individual sample
+            confusion_matrix_with_method = {method: confusion_matrix_score_dict}
+            
+            # Record the y_true and y_scores for the current sample to plot all sample AUROC and AUPRC between methods
+            total_method_confusion_scores[method]['y_true'].append(confusion_matrix_score_dict['y_true'])
+            total_method_confusion_scores[method]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
+            
+            # Record the original and randomized y_true and y_scores for each sample to compare against the randomized scores
+            randomized_method_dict[f"{method} Original"]['y_true'].append(confusion_matrix_score_dict['y_true'])
+            randomized_method_dict[f"{method} Original"]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
+            
+            randomized_method_dict[f"{method} Randomized"]['y_true'].append(randomized_confusion_matrix_dict['y_true'])
+            randomized_method_dict[f"{method} Randomized"]['y_scores'].append(randomized_confusion_matrix_dict['y_scores'])
+            
+            sample_randomized_method_dict = {
+                f"{method} Original": {'y_true':confusion_matrix_score_dict['y_true'], 'y_scores':confusion_matrix_score_dict['y_scores']},
+                f"{method} Randomized": {'y_true':randomized_confusion_matrix_dict['y_true'], 'y_scores':randomized_confusion_matrix_dict['y_scores']}
+            }
+            plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{method}/{sample}/randomized_auroc_auprc.png')
+            plotting.plot_auroc_auprc(confusion_matrix_with_method, f'./OUTPUT/{method}/{sample}/auroc_auprc.png')
+        
+            # Add the auroc and auprc values to the total accuracy metric dictionaries
+            total_accuracy_metrics[method][sample]['auroc'] = auroc
+            total_accuracy_metrics[method][sample]['auprc'] = auprc
+            
+            random_accuracy_metrics[method][sample]['auroc'] = randomized_auroc
+            random_accuracy_metrics[method][sample]['auprc'] = randomized_auprc
+            
+            # Update the accuracy metrics with the confusion matrix keys
+            confusion_matrix_keys = ["true_positive", "true_negative", "false_positive", "false_negative"]
+            for key in confusion_matrix_keys:
+                total_accuracy_metrics[method][sample][key] = int(confusion_matrix_score_dict[key])
+                random_accuracy_metrics[method][sample][key] = int(randomized_confusion_matrix_dict[key])
 
-    # Save final accuracy metrics
-    print(f"Saving final accuracy metrics")
+
+
+        print(f'\tPlotting {method.lower()} original vs randomized AUROC and AUPRC for all samples')
+        plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{method.lower()}_randomized_auroc_auprc.png')
+    
+    print(f'\nPlotting AUROC and AUPRC comparing all methods')
+    plotting.plot_multiple_method_auroc_auprc(total_method_confusion_scores, './OUTPUT/auroc_auprc_combined.png')
+    
+    
     write_method_accuracy_metric_file(total_accuracy_metrics)
     write_method_accuracy_metric_file(random_accuracy_metrics)
-    
-    print(f'Done! Successfully completed analysis')
-
                 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')  
