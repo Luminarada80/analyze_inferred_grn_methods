@@ -311,6 +311,7 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
             plotting.plot_inference_score_histogram(inferred_network_df, method, f'./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_score_distribution.png')
             inferred_networks[method][sample] = inferred_network_df
 
+
     # Processing steps
     print(f'\nPreprocessing:')
     
@@ -320,6 +321,27 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
             print(f'\tPreprocessing {method} sample {sample}')
             sample_ground_truth = ground_truth_dict[method][sample]
             inferred_network_df = inferred_networks[method][sample]
+            
+             # Initialize a dictionary to store sizes
+            network_sizes = {
+                "Type": ["before_processing", "after_processing"],
+                "Ground Truth TFs": [None, None],
+                "Ground Truth TGs": [None, None],
+                "Ground Truth Edges": [None, None],
+                "Inferred TFs": [None, None],
+                "Inferred TGs": [None, None],
+                "Inferred Edges": [None, None],
+            }
+
+            # Compute sizes before processing
+            network_sizes["Ground Truth TFs"][0] = len(set(sample_ground_truth["Source"]))
+            network_sizes["Ground Truth TGs"][0] = len(set(sample_ground_truth["Target"]))
+            network_sizes["Ground Truth Edges"][0] = len(sample_ground_truth)
+
+            network_sizes["Inferred TFs"][0] = len(set(inferred_network_df["Source"]))
+            network_sizes["Inferred TGs"][0] = len(set(inferred_network_df["Target"]))
+            network_sizes["Inferred Edges"][0] = len(inferred_network_df)
+    
             
             sample_ground_truth = grn_formatting.add_inferred_scores_to_ground_truth(
                 sample_ground_truth, inferred_network_df
@@ -346,21 +368,36 @@ def preprocess_inferred_and_ground_truth_networks(ground_truth_path, method_name
                 sample_ground_truth, inferred_network_df
             )
                
-            # Update processed data
-            with open(f'./OUTPUT/{method}/{sample}/ground_truth_size_processed.tsv', 'w') as outfile:
-                outfile.write(f'TFs\t{len(set(sample_ground_truth["Source"]))}\n')
-                outfile.write(f'TGs\t{len(set(sample_ground_truth["Target"]))}\n')
-                outfile.write(f'Edges\t{len(sample_ground_truth["Source"])}\n')
+            # Update the network size file with the processed network sizes
+            # Compute sizes after processing
+            network_sizes["Ground Truth TFs"][1] = len(set(sample_ground_truth["Source"]))
+            network_sizes["Ground Truth TGs"][1] = len(set(sample_ground_truth["Target"]))
+            network_sizes["Ground Truth Edges"][1] = len(sample_ground_truth)
+
+            network_sizes["Inferred TFs"][1] = len(set(inferred_network_df["Source"]))
+            network_sizes["Inferred TGs"][1] = len(set(inferred_network_df["Target"]))
+            network_sizes["Inferred Edges"][1] = len(inferred_network_df)
+
+            # Convert to DataFrame for easy output
+            size_df = pd.DataFrame(network_sizes)
+
+            # Define output paths
+            os.makedirs(f"./OUTPUT/{method}/{sample}", exist_ok=True)
+            ground_truth_size_path = f"./OUTPUT/{method}/{sample}/{method.lower()}_ground_truth_size_{sample.lower()}.tsv"
+            inferred_network_size_path = f"./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_size_{sample.lower()}.tsv"
+
+            # Write the sizes to TSV files
+            size_df[["Type", "Ground Truth TFs", "Ground Truth TGs", "Ground Truth Edges"]].to_csv(
+                ground_truth_size_path, sep="\t", index=False
+            )
+            size_df[["Type", "Inferred TFs", "Inferred TGs", "Inferred Edges"]].to_csv(
+                inferred_network_size_path, sep="\t", index=False
+            )
             
+            # Update the dictionaries with the processed data
             ground_truth_dict[method][sample] = sample_ground_truth
             inferred_networks[method][sample] = inferred_network_df
-
-            with open(f'./OUTPUT/{method}/{sample}/inferred_network_size_processed.tsv', 'w') as outfile:
-                outfile.write(f'TFs\t{len(set(inferred_network_df["Source"]))}\n')
-                outfile.write(f'TGs\t{len(set(inferred_network_df["Target"]))}\n')
-                outfile.write(f'Edges\t{len(inferred_network_df["Source"])}\n')
                 
-            inferred_networks[method][sample] = inferred_network_df
     # Finalize processed data
     for method in method_names:
         processed_inferred_network_dict[method] = {}
