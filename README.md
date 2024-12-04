@@ -27,8 +27,10 @@ We regard interactions between TFs and TGs found in the ground truth as true pos
 We regard interactions between TFs and TGs not found in the ground truth as true negatives, as these edges are not shown to exist experimentally
 
 We can evaluate the accuracy of the inference methods by comparing edges between TFs and TGs in the ground truth against TFs and TGs not in the ground
-truth. As each edge has an inferred score indicating the predicted regulatory interaction, edges in the ground truth should have a higher score than edges
-nor in the ground truth. 
+truth. As each edge has an inferred score indicating the predicted regulatory interaction, edges in the ground truth should have a higher score than edges not in the ground truth. 
+
+![image](https://github.com/user-attachments/assets/dfb9a535-7d7c-4bc1-b6ea-412fbcb85782)
 
 ## Requirements:
 Install the GRN analysis toolkit to a conda environment using `conda install luminarada80::grn_analysis_tools`
+
