@@ -11,16 +11,19 @@ dataset and the inferred network to have a higher score than interactions betwee
 
 For our purposes, we can categorize the information in an inferred GRN into three groups:
 
-### 1. Interactions involving genes that are not in the ground truth
+**1. Interactions involving genes that are not in the ground truth**
+
 The inferred networks contain edges between genes that are not present in the ground truth. We can only compare the predicted interactions between
 genes present in both the inferred network and the ground truth network, because we have no information about the interactions between other genes. 
 We remove any predicted interactions that involve TFs or TGs not present in the ground truth from the inferred network, so we are comparing the same
 set of TFs and TGs.
 
-### 2. Interactions present in the ground truth
+**2. Interactions present in the ground truth**
+
 We regard interactions between TFs and TGs found in the ground truth as true positives, as these edges have been shown to exist experimentally.
 
-### 3. Interactions not present in the ground truth
+**3. Interactions not present in the ground truth**
+
 We regard interactions between TFs and TGs not found in the ground truth as true negatives, as these edges are not shown to exist experimentally
 
 We can evaluate the accuracy of the inference methods by comparing edges between TFs and TGs in the ground truth against TFs and TGs not in the ground
