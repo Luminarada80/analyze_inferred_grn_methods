@@ -1,6 +1,10 @@
 # Analyzing Gene Regulatory Network (GRN) Inference Methods
-This pipeline compares GRN inference methods against a common ground truth dataset. 
-First, each inference method is used to generate an inferred network from the same input dataset of single-cell multiomic
+ 
+
+![image](https://github.com/user-attachments/assets/cd9a3dfb-e987-446d-9bbd-9b2c3001ea32)
+
+This pipeline compares GRN inference methods against a common ground truth dataset. First, each inference method is used to generate
+an inferred network from the same input dataset of single-cell multiomic
 RNAseq and ATACseq data. These inferred networks are then evaluated against an experimentally-derived ground truth dataset from 
 either a ChIPseq, HiC, or LOGOF experiment from the same organism and tissue / cell type. For each inference method, interactions between 
 each transcription factor (TF) and target gene (TG) in the dataset are scored based on the calculated likelihood of a TF regulating a TG. 
