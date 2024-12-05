@@ -1,5 +1,9 @@
 # Analyzing Gene Regulatory Network (GRN) Inference Methods
 
+## Requirements:
+Install the GRN analysis toolkit to a conda environment using `conda install luminarada80::grn_analysis_tools`
+
+## Methods:
 ### Gene Regulatory Inference Methods
 The goal of single-cell multiomic GRN inference methods is to determine the regulatory relationships between genes
 involved in a cellular process. Determining the structure of cell signaling pathways via data-driven approaches will
@@ -38,27 +42,54 @@ dataset and the inferred network to have a higher score than interactions betwee
 ## Comparing Inferred Networks to Ground Truth Networks
 For our purposes, we can relate the information in an inferred GRN to the ground truth dataset in three main ways:
 
-**1. Interactions involving genes that are not in the ground truth**
+<table border="3" style="border-collapse: collapse; text-align: center; width: 100%;">
+  <thead>
+    <tr>
+      <th>Interactions with genes not in the ground truth</th>
+      <th>Interactions present in the ground truth</th>
+      <th>Interactions not present in the ground truth</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        Genes in the inferred network that are not in the ground truth network. These are <b>removed</b> to only compare shared genes.
+      </td>
+      <td>
+        These are the <b>true positive</b> interactions, as they have been shown to exist experimentally.
+      </td>
+      <td>
+        These are the <b>true negatives</b>, as they are not in the ground truth.
+      </td>
+    </tr>
+    <tr>
+      <td>
+       <p align="center">
+        <img src="https://github.com/user-attachments/assets/1d796d06-1306-4756-a016-8db13b035345" alt="Image 1" width="200"/>
+       </p>
+      </td>
+      <td>
+       <p align="center">
+        <img src="https://github.com/user-attachments/assets/f49e7753-027a-4524-84ff-9f5cc529ce8a" alt="Image 2" width="200"/>
+        </p>
+      </td>
+      <td>
+       <p align="center">
+        <img src="https://github.com/user-attachments/assets/cc2ec3e1-a052-4157-b4c2-3b6061332a4b" alt="Image 3" width="200"/>
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
+Each ground truth and non-ground truth edge has an **edge score** calculated by the inference method. We can plot a histogram of these scores and separate the edges by
+ground truth (orange) and non-ground truth (blue). We can set a threshold at one standard deviation below the mean ground truth value, and use this to determine if an edge
+score should be true or false.
+<p align="center">
+ <img src="https://github.com/user-attachments/assets/dc2a7745-0fbb-400b-823b-c59feedfe22e" alt="Image 3" width="1200"/>
+</p>
 
-The inferred networks contain edges between genes that are not present in the ground truth. We can only compare the predicted interactions between
-genes present in both the inferred network and the ground truth network, because we have no information about the interactions between other genes. 
-We remove any predicted interactions that involve TFs or TGs not present in the ground truth from the inferred network, so we are comparing the same
-set of TFs and TGs.
-
-**2. Interactions present in the ground truth**
-
-We regard interactions between TFs and TGs found in the ground truth as true positives, as these edges have been shown to exist experimentally.
-
-**3. Interactions not present in the ground truth**
-
-We regard interactions between TFs and TGs not found in the ground truth as true negatives, as these edges are not shown to exist experimentally
-
-We can evaluate the accuracy of the inference methods by comparing edges between TFs and TGs in the ground truth against TFs and TGs not in the ground
-truth. As each edge has an inferred score indicating the predicted regulatory interaction, edges in the ground truth should have a higher score than edges not in the ground truth. 
-
-![image](https://github.com/user-attachments/assets/dfb9a535-7d7c-4bc1-b6ea-412fbcb85782)
-
-## Requirements:
-Install the GRN analysis toolkit to a conda environment using `conda install luminarada80::grn_analysis_tools`
+|True Positive|False Positive|True Negative|False Negative|
+|:-----------:|:------------:|:------------:|:-----------:|
+|The edge is **above** the threshold and is in the **ground truth**|The edge is **above** the threshold but is in the **non-ground truth**|The edge is **below** the threshold and is in the **ground truth**|The edge is **below** the threshold and is in the **non-ground truth** |
 
