@@ -24,7 +24,7 @@ To accomplish this, our methods compare multiple GRN inference methods against a
 method is used to generate an inferred GRN using the same input dataset of single-cell multiomic RNAseq and ATACseq data.
 
 <p align="center">
- <img src="https://github.com/user-attachments/assets/cd9a3dfb-e987-446d-9bbd-9b2c3001ea32" alt="drawing" width="800"/>
+ <img src="https://github.com/user-attachments/assets/cd9a3dfb-e987-446d-9bbd-9b2c3001ea32" alt="drawing" width="600"/>
 </p>
 
 
@@ -36,7 +36,7 @@ as true positives when evaluating the inferred networks. We expect interactions 
 dataset and the inferred network to have a higher score than interactions between TFs and TGs not in the ground truth. 
 
 <p align="center">
- <img src="https://github.com/user-attachments/assets/cf53ad2a-36ce-484e-b707-f595e2698112" alt="drawing" width="800"/>
+ <img src="https://github.com/user-attachments/assets/cf53ad2a-36ce-484e-b707-f595e2698112" alt="drawing" width="600"/>
 </p>
 
 ## Comparing Inferred Networks to Ground Truth Networks
