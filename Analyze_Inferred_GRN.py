@@ -269,7 +269,6 @@ def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict, batch_na
         total_accuracy_metrics_df = pd.DataFrame(total_accuracy_metric_dict[method]).T
         total_accuracy_metrics_df.to_csv(f'OUTPUT/{method}/{batch_name}/{method.lower()}_{batch_name}_total_accuracy_metrics.tsv', sep='\t') 
 
-# Allows the user to input whether they want to analyze the cell population or cell type results
 def parse_args():
     parser = argparse.ArgumentParser(description="Process Inferred GRNs.")
     parser.add_argument(

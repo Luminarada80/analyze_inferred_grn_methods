@@ -1,20 +1,10 @@
 library(dplyr)
 library(readr)
 library(purrr)
-#setwd("~/Multi_omics_GRN/CellOracle/VERSION1.mESC_DS014/CURRENT.mESC_DS014/STABILITY_ANALYSIS/output_GRN")
 
-
-# Function to read, filter, and sort each network
-#read_and_sort_network <- function(file) {
-#  network <- read_csv(file)
-#  network %>%
-#    arrange(desc(Score)) %>%    # Sort by Score in descending order
-#    slice_head(n = 50000)       # Keep top 50,000 edges
-#}
-
-sample_name <- "K562_stability"
-network_dir <- paste("OUTPUT/LINGER/", sample_name, "/STANDARDIZED_INFERRED_NETWORKS")
-output_path <- paste("OUTPUT/LINGER/", sample_name, "/jaccard_index_stability_matrix.csv")
+sample_name <- "macrophage_stability_buffer4"
+network_dir <- paste0("OUTPUT/LINGER/", sample_name, "/STANDARDIZED_INFERRED_NETWORKS")
+output_path <- paste0("OUTPUT/LINGER/", sample_name, "/jaccard_index_stability_matrix.csv")
 
 # Function to read, filter, and sort each network
 read_and_sort_network <- function(file) {
@@ -32,9 +22,11 @@ read_and_sort_network <- function(file) {
 # Assuming you have a list of file paths for the networks
 network_files <- list.files(path = network_dir, pattern = "*.csv", full.names = TRUE)
 network_files
+
 # Load and process each network
 network_list <- map(network_files, read_and_sort_network)
 network_list[[1]]$Score
+
 # Function to calculate Jaccard Index for two networks
 calculate_jaccard <- function(network1, network2) {
   common_edges <- intersect(paste(network1$Source, network1$Target),

@@ -8,6 +8,7 @@ import os
 import logging
 import csv
 import gc
+import argparse
 
 # Install using 'conda install luminarada80::grn_analysis_tools' 
 # or update to the newest version using 'conda update grn_analysis_tools'
@@ -26,6 +27,8 @@ rcParams.update({
     'ytick.labelsize': 14,  # Y-axis tick label size
     'legend.fontsize': 14  # Legend font size
 })
+
+
 
 def print_banner():
     logging.info("""
@@ -67,7 +70,7 @@ def log_message(message, width=60, fill_char='='):
     return f"\n\n{fill_char * left_pad}{message}{fill_char * right_pad}"
 
 
-def read_input_files() -> tuple[str, list, list, dict]:
+def read_input_files(input_directory) -> tuple[str, list, list, dict]:
     """
     Reads through the current directory to find input files.
     
@@ -98,7 +101,7 @@ def read_input_files() -> tuple[str, list, list, dict]:
     
     # Looks through the current directory for a folder called "input"
     for folder in os.listdir("."):
-        if folder.lower() == "input":
+        if folder.lower() == input_directory.lower():
             logging.info(folder)
             for subfolder in os.listdir(f'./{folder}'):
                 logging.info(f'  └──{subfolder}')
@@ -249,7 +252,7 @@ def create_ground_truth_copies(
     
     return ground_truth_dict
 
-def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict) -> None:
+def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict, output_dir) -> None:
     """
     For each inference method, creates a pandas dataframe of the accuracy metrics for each sample and 
     outputs the results to a tsv file.
@@ -264,13 +267,42 @@ def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict) -> None:
     """
     for method in total_accuracy_metric_dict.keys():
         total_accuracy_metrics_df = pd.DataFrame(total_accuracy_metric_dict[method]).T
-        total_accuracy_metrics_df.to_csv(f'OUTPUT/{method.lower()}_total_accuracy_metrics.tsv', sep='\t') 
-                
+        total_accuracy_metrics_df.to_csv(f'{output_dir}/{method.lower()}_total_accuracy_metrics.tsv', sep='\t') 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Process Inferred GRNs.")
+    parser.add_argument(
+        "--input_directory",
+        type=str,
+        required=True,
+        help="Name of the output inferred file created by the method"
+    )    
+    parser.add_argument(
+        "--batch_name",
+        type=str,
+        required=True,
+        help="Name of the batch to separate out groups of samples"
+    )
+      
+    args = parser.parse_args()
+
+    return args 
 
 def main():
     print_banner()
     
-    ground_truth_path, method_names, sample_names, inferred_network_dict = read_input_files()
+    args = parse_args()
+    
+    input_directory = args.input_directory
+    batch_name = args.batch_name
+    
+    ground_truth_path, method_names, sample_names, inferred_network_dict = read_input_files(input_directory)
+    
+    all_method_names = "_vs_".join([method for method in method_names])
+    comparision_output_path = f'./OUTPUT/{batch_name}_{all_method_names}_all_samples'
+    
+    if not os.path.exists(comparision_output_path):
+        os.makedirs(comparision_output_path)
     
     print(log_message("INFERENCE METHOD ANALYSIS AND COMPARISON"))
     
@@ -318,7 +350,7 @@ def main():
             plotting.plot_inference_score_histogram(
                 inferred_network_df,
                  method,
-                 f'./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_score_distribution.png')
+                 f'./OUTPUT/{method}/{sample}/{method}_inferred_network_score_distribution.png')
             
             # ======================= PREPROCESSING ============================
             sample_ground_truth = ground_truth.copy()
@@ -427,14 +459,14 @@ def main():
 
             # Write out the accuracy metrics to a tsv file
             logging.debug(f'\t\tWriting accuracy metrics to a tsv file') 
-            with open(f'./OUTPUT/{method.upper()}/{sample.lower()}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
+            with open(f'./OUTPUT/{method.upper()}/{sample}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
                 accuracy_metric_file.write(f'Metric\tScore\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
                     total_accuracy_metrics[method][sample][metric_name] = score
             
             # Write out the randomized accuracy metrics to a tsv file
-            with open(f'./OUTPUT/{method.upper()}/{sample.lower()}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
+            with open(f'./OUTPUT/{method.upper()}/{sample}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
                 random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{randomized_accuracy_metric_dict[metric_name]:4f}\n')
@@ -492,14 +524,15 @@ def main():
             gc.collect()
 
         logging.info(f'\tPlotting {method.lower()} original vs randomized AUROC and AUPRC for all samples')
-        plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{method.lower()}_randomized_auroc_auprc.png')
+        plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'{comparision_output_path}/{method.lower()}_randomized_auroc_auprc.png')
     
     logging.info(f'\nPlotting AUROC and AUPRC comparing all methods')
-    plotting.plot_multiple_method_auroc_auprc(total_method_confusion_scores, './OUTPUT/auroc_auprc_combined.png')
+    
+    plotting.plot_multiple_method_auroc_auprc(total_method_confusion_scores, f'{comparision_output_path}/auroc_auprc_combined.png')
     
     
-    write_method_accuracy_metric_file(total_accuracy_metrics)
-    write_method_accuracy_metric_file(random_accuracy_metrics)
+    write_method_accuracy_metric_file(total_accuracy_metrics, comparision_output_path)
+    write_method_accuracy_metric_file(random_accuracy_metrics, comparision_output_path)
                 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')  
