@@ -427,14 +427,14 @@ def main():
 
             # Write out the accuracy metrics to a tsv file
             logging.debug(f'\t\tWriting accuracy metrics to a tsv file') 
-            with open(f'./OUTPUT/{method.upper()}/{sample.upper()}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
+            with open(f'./OUTPUT/{method.upper()}/{sample.lower()}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
                 accuracy_metric_file.write(f'Metric\tScore\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
                     total_accuracy_metrics[method][sample][metric_name] = score
             
             # Write out the randomized accuracy metrics to a tsv file
-            with open(f'./OUTPUT/{method.upper()}/{sample.upper()}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
+            with open(f'./OUTPUT/{method.upper()}/{sample.lower()}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
                 random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{randomized_accuracy_metric_dict[metric_name]:4f}\n')
