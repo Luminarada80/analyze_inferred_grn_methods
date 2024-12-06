@@ -70,7 +70,7 @@ For our purposes, we can relate the information in an inferred GRN to the ground
       </td>
       <td>
        <p align="center">
-        <img src="https://github.com/user-attachments/assets/f49e7753-027a-4524-84ff-9f5cc529ce8a" alt="Image 2" width="200"/>
+        <img src="https://github.com/user-attachments/assets/02d6e9bf-d3c3-485d-903a-94bd4a498dcb" alt="Image 2" width="200"/>
         </p>
       </td>
       <td>
