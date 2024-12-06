@@ -267,7 +267,7 @@ def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict, batch_na
     """
     for method in total_accuracy_metric_dict.keys():
         total_accuracy_metrics_df = pd.DataFrame(total_accuracy_metric_dict[method]).T
-        total_accuracy_metrics_df.to_csv(f'OUTPUT/{batch_name}/{method.lower()}{batch_name}_total_accuracy_metrics.tsv', sep='\t') 
+        total_accuracy_metrics_df.to_csv(f'OUTPUT/{method}/{batch_name}/{method.lower()}_{batch_name}_total_accuracy_metrics.tsv', sep='\t') 
 
 # Allows the user to input whether they want to analyze the cell population or cell type results
 def parse_args():
@@ -375,6 +375,11 @@ def main():
             inferred_network_df = grn_formatting.create_standard_dataframe(
                 inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
             )
+        
+        if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/STANDARDIZED_INFERRED_NETWORKS/'):
+            os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/STANDARDIZED_INFERRED_NETWORKS/')
+        
+        inferred_network_df.to_csv(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/STANDARDIZED_INFERRED_NETWORKS/{sample}_standardized.csv', sep=',', header=True, index=False)
             
         plotting.plot_inference_score_histogram(
             inferred_network_df,
@@ -557,7 +562,7 @@ def main():
     if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
         os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
         
-    plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
+    plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
     
     write_method_accuracy_metric_file(total_accuracy_metrics, BATCH_NAME)
     write_method_accuracy_metric_file(random_accuracy_metrics, BATCH_NAME)
