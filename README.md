@@ -86,7 +86,7 @@ Each ground truth and non-ground truth edge has an **edge score** calculated by 
 ground truth (orange) and non-ground truth (blue). We can set a threshold at one standard deviation below the mean ground truth value, and use this to determine if an edge
 score should be true or false.
 <p align="center">
- <img src="https://github.com/user-attachments/assets/dc2a7745-0fbb-400b-823b-c59feedfe22e" alt="Image 3" width="1200"/>
+ <img src="https://github.com/user-attachments/assets/5c1cd3d9-5401-4d57-ac77-73f6bd2a5075" alt="Image 3" width="1200"/>
 </p>
 
 |True Positive|False Positive|True Negative|False Negative|
