@@ -16,7 +16,8 @@ read_and_sort_network <- function(file) {
   # Sort by Score in descending order and keep top 50,000 edges
   network %>%
     arrange(desc(Score)) %>%    # Sort by Score in descending order
-    slice_head(n = 50000)       # Keep top 50,000 edges
+    # slice_head(n = 50000)       # Keep top 50,000 edges
+    slice_sample(n = 50000)       # Randomly select 50,000 edges
 }
 
 # Assuming you have a list of file paths for the networks

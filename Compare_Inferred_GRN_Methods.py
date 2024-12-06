@@ -350,7 +350,7 @@ def main():
             plotting.plot_inference_score_histogram(
                 inferred_network_df,
                  method,
-                 f'./OUTPUT/{method}/{sample}/{method}_inferred_network_score_distribution.png')
+                 f'./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_score_distribution.png')
             
             # ======================= PREPROCESSING ============================
             sample_ground_truth = ground_truth.copy()
@@ -454,9 +454,16 @@ def main():
             randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
                 sample_ground_truth,
                 inferred_network_df,
-                histogram_save_path=f'./OUTPUT/{method}/{sample}/randomized_histogram_with_threshold'
+                histogram_save_path=f'./OUTPUT/{method}/{sample}/randomized_histogram_with_threshold',
+                random_method="random_permutation"
                 )
-
+            
+            uniform_accuracy_metric_dict, uniform_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
+                sample_ground_truth,
+                inferred_network_df,
+                random_method="uniform_distribution"
+                )
+            
             # Write out the accuracy metrics to a tsv file
             logging.debug(f'\t\tWriting accuracy metrics to a tsv file') 
             with open(f'./OUTPUT/{method.upper()}/{sample}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
@@ -464,13 +471,13 @@ def main():
                 for metric_name, score in accuracy_metric_dict.items():
                     accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
                     total_accuracy_metrics[method][sample][metric_name] = score
-            
+                        
             # Write out the randomized accuracy metrics to a tsv file
             with open(f'./OUTPUT/{method.upper()}/{sample}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
                 random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
                 for metric_name, score in accuracy_metric_dict.items():
-                    random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{randomized_accuracy_metric_dict[metric_name]:4f}\n')
-                    random_accuracy_metrics[method][sample][metric_name] = randomized_accuracy_metric_dict[metric_name]
+                    random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{uniform_accuracy_metric_dict[metric_name]:4f}\n')
+                    random_accuracy_metrics[method][sample][metric_name] = uniform_accuracy_metric_dict[metric_name]
         
             # Calculate the normal AUROC and AUPRC
             logging.debug(f'\t\tCalculating normal AUROC and AUPRC') 
@@ -479,8 +486,8 @@ def main():
             
             # Calculate the randomized AUPRC and randomized AUPRC
             logging.debug(f'\t\tCalculating randomized AUROC and AUPRC') 
-            randomized_auroc = grn_stats.calculate_auroc(randomized_confusion_matrix_dict)
-            randomized_auprc = grn_stats.calculate_auprc(randomized_confusion_matrix_dict)
+            randomized_auroc = grn_stats.calculate_auroc(uniform_confusion_matrix_dict)
+            randomized_auprc = grn_stats.calculate_auprc(uniform_confusion_matrix_dict)
         
             # Plot the normal and randomized AUROC and AUPRC for the individual sample
             confusion_matrix_with_method = {method: confusion_matrix_score_dict}
@@ -493,12 +500,12 @@ def main():
             randomized_method_dict[f"{method} Original"]['y_true'].append(confusion_matrix_score_dict['y_true'])
             randomized_method_dict[f"{method} Original"]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
             
-            randomized_method_dict[f"{method} Randomized"]['y_true'].append(randomized_confusion_matrix_dict['y_true'])
-            randomized_method_dict[f"{method} Randomized"]['y_scores'].append(randomized_confusion_matrix_dict['y_scores'])
+            randomized_method_dict[f"{method} Randomized"]['y_true'].append(uniform_confusion_matrix_dict['y_true'])
+            randomized_method_dict[f"{method} Randomized"]['y_scores'].append(uniform_confusion_matrix_dict['y_scores'])
             
             sample_randomized_method_dict = {
                 f"{method} Original": {'y_true':confusion_matrix_score_dict['y_true'], 'y_scores':confusion_matrix_score_dict['y_scores']},
-                f"{method} Randomized": {'y_true':randomized_confusion_matrix_dict['y_true'], 'y_scores':randomized_confusion_matrix_dict['y_scores']}
+                f"{method} Randomized": {'y_true':uniform_confusion_matrix_dict['y_true'], 'y_scores':uniform_confusion_matrix_dict['y_scores']}
             }
             
             logging.debug(f'\t\tPlotting the normal and randomized AUROC and AUPRC graphs') 
@@ -517,7 +524,7 @@ def main():
             confusion_matrix_keys = ["true_positive", "true_negative", "false_positive", "false_negative"]
             for key in confusion_matrix_keys:
                 total_accuracy_metrics[method][sample][key] = int(confusion_matrix_score_dict[key])
-                random_accuracy_metrics[method][sample][key] = int(randomized_confusion_matrix_dict[key])
+                random_accuracy_metrics[method][sample][key] = int(uniform_confusion_matrix_dict[key])
             
             # Free memory
             del sample_ground_truth, inferred_network_df
