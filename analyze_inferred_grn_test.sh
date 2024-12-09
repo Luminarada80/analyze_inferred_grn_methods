@@ -5,10 +5,20 @@
 #     --input_directory "K562_INPUT" \
 #     --batch_name "K562"
 
-# ====== MACROPHAGE CellOracle vs LINGER ========
+# # ====== MACROPHAGE CellOracle vs LINGER ========
+# python3 Compare_Inferred_GRN_Methods.py \
+#     --input_directory "MACROPHAGE_INPUT" \
+#     --batch_name "macrophage"
+
+# ====== K562 RN118 KNOCKOUT GROUND TRUTH =======
 python3 Compare_Inferred_GRN_Methods.py \
-    --input_directory "MACROPHAGE_INPUT" \
-    --batch_name "macrophage"
+    --input_directory "K526_RN118_INPUT" \
+    --batch_name "K562_RN118"
+
+# ====== K562 RN119 KNOCKOUT GROUND TRUTH =======
+python3 Compare_Inferred_GRN_Methods.py \
+    --input_directory "K526_RN119_INPUT" \
+    --batch_name "K562_RN119"
 
 # =========== MACROPHAGE STABILITY ==============
 # for ((i=1; i<=4; i++)); do
