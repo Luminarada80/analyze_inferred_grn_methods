@@ -5,20 +5,10 @@ Install the GRN analysis toolkit to a conda environment using `conda install lum
 
 ## Methods:
 ### Gene Regulatory Inference Methods
-The goal of single-cell multiomic GRN inference methods is to determine the regulatory relationships between genes
-involved in a cellular process. Determining the structure of cell signaling pathways via data-driven approaches will
-cut down on time and resource requirements involved with experimentally determining signaling pathway structure. As each
-cell type has different behaviors, each cell type also has different cell signaling pathways. These interact in complex
-ways to govern the behavior of a cell, and these signaling dynamics are notoriously difficult to determine. Think of this
-task as being similar to determining trying to determine what programs are running on a computer by measuring the voltage 
-across each transistor. Understanding the structure and function of these networks is key to understanding how diseases perturb
-their signaling. The process of piecing together the regulatory interactions in a network is a difficult task, and requires
-access to large datasets of genetic information. Single cell RNA and ATAC sequencing methods allow us to determine which genes
-were being transcribed at the time of sequencing and which enhancers were open. Researchers are trying to use this information,
-paired with information about which transcription factors bind to the open DNA sequence motifs, to infer regulatory relationships
-between transcription factors and their target genes. These methods each benchmark how good they are at this task in different ways,
-so our goal is to create standardized benchmarking methods to compare each method to one another in an un-biased and fair manner.
-
+The goal of a GRN inference method is to determine the regulatory relationships between genes
+involved in a cellular process. Normally, these regulatory relationships are determined by rigorous molecular experiments that identify regulatory relationships by knocking in or out the gene and studying the changes that occur. Determining the structure of cell signaling pathways via data-driven approaches using large-scale multiomic data will
+cut down on the time and resource requirements involved with experimentally determining signaling pathway structure. As each
+cell type have different behaviors, they also have different cell signaling pathways. To further complicate the task, multiple pathways interact to integrate and process multiple sources of data to govern the overall behavior of a cell. Trying to determine the structure of a signaling pathway from gene expression is similar to determining trying to determine what programs are running on a computer by measuring the voltage across each transistor, no easy task. The process of piecing together the regulatory interactions in a network is a difficult problem to solve and requires access to large datasets and sophisticated algorithms to make sense of the data. Multiomic data expands on methods that only use single cell RNA sequencing by also including paired ATAC sequencing. This allow us to determine which genes were being transcribed at the time of sequencing along with which enhancers were open. Researchers are trying to use this information to infer regulatory relationships between transcription factors and their target genes. The goal of this project is to create a framework to benchmark how effective they are at this task and to create standardized benchmarking methods to compare future methods to one another in an un-biased and fair manner.
 
 To accomplish this, our methods compare multiple GRN inference methods against a common ground truth dataset. First, each inference
 method is used to generate an inferred GRN using the same input dataset of single-cell multiomic RNAseq and ATACseq data.
