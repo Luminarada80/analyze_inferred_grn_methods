@@ -32,54 +32,30 @@ dataset and the inferred network to have a higher score than interactions betwee
 ## Comparing Inferred Networks to Ground Truth Networks
 For our purposes, we can relate the information in an inferred GRN to the ground truth dataset in three main ways:
 
-<table border="3" style="border-collapse: collapse; text-align: center; width: 100%;">
-  <thead>
-    <tr>
-      <th>Interactions with genes not in the ground truth</th>
-      <th>Interactions present in the ground truth</th>
-      <th>Interactions not present in the ground truth</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        Genes in the inferred network that are not in the ground truth network. These are <b>removed</b> to only compare shared genes.
-      </td>
-      <td>
-        These are the <b>true positive</b> interactions, as they have been shown to exist experimentally.
-      </td>
-      <td>
-        These are the <b>true negatives</b>, as they are not in the ground truth.
-      </td>
-    </tr>
-    <tr>
-      <td>
-       <p align="center">
-        <img src="https://github.com/user-attachments/assets/1d796d06-1306-4756-a016-8db13b035345" alt="Image 1" width="200"/>
-       </p>
-      </td>
-      <td>
-       <p align="center">
-        <img src="https://github.com/user-attachments/assets/02d6e9bf-d3c3-485d-903a-94bd4a498dcb" alt="Image 2" width="200"/>
-        </p>
-      </td>
-      <td>
-       <p align="center">
-        <img src="https://github.com/user-attachments/assets/cc2ec3e1-a052-4157-b4c2-3b6061332a4b" alt="Image 3" width="200"/>
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<p align="center">
+ <img src="https://github.com/user-attachments/assets/2218f503-74ee-482d-a5c6-ffd33ea84071" alt="drawing" width="900"/>
+</p>
 
 Each ground truth and non-ground truth edge has an **edge score** calculated by the inference method. We can plot a histogram of these scores and separate the edges by
 ground truth (orange) and non-ground truth (blue). We can set a threshold at one standard deviation below the mean ground truth value, and use this to determine if an edge
 score should be true or false.
 <p align="center">
- <img src="https://github.com/user-attachments/assets/5c1cd3d9-5401-4d57-ac77-73f6bd2a5075" alt="Image 3" width="1200"/>
+ <img src="https://github.com/user-attachments/assets/5c1cd3d9-5401-4d57-ac77-73f6bd2a5075" alt="Image 3" width="800"/>
 </p>
 
 |True Positive|False Positive|True Negative|False Negative|
 |:-----------:|:------------:|:------------:|:-----------:|
 |The edge is **above** the threshold and is in the **ground truth**|The edge is **above** the threshold but is in the **non-ground truth**|The edge is **below** the threshold and is in the **ground truth**|The edge is **below** the threshold and is in the **non-ground truth** |
+
+
+## Comparing Methods
+
+### AUROC: Area Under the Receiver Operating Characteristic Curve
+We can evaluate the performce of each method compared to the same ground truth, and evaluate the ratio between the **True Positive Rate (TPR)** and **False Positive Rate (FPR)** across the inferred edge scores. This allows us to compare model performance across the same ground truth dataset. We also compare the performance to a random uniform distribution across the inferred and ground truth edges to ensure that random edge scores would have an **Area Under the Curve (AUC)** of 0.50, which indicates a performance no better than random chance.
+
+<p align="center">
+ <img src="https://github.com/user-attachments/assets/eade8349-dad2-479d-bdff-3cefa3d0b5cf" alt="Image 3" width="600"/>
+</p>
+
+
 
