@@ -10,14 +10,18 @@ output_path <- paste0("OUTPUT/LINGER/", sample_name, "/jaccard_index_stability_m
 read_and_sort_network <- function(file) {
   network <- read_csv(file)
   
+  set.seed(12345) # Sets a seed for selecting edges so that the same ones are selected
+
   # Rename columns
   colnames(network) <- c("Source", "Target", "Score")
+  length(network$Score)
+  # network %>% slice_head(n = 50000)
   
   # Sort by Score in descending order and keep top 50,000 edges
   network %>%
     arrange(desc(Score)) %>%    # Sort by Score in descending order
-    # slice_head(n = 50000)       # Keep top 50,000 edges
-    slice_sample(n = 50000)       # Randomly select 50,000 edges
+      slice_sample(n = 50000)       # Keep top 50,000 edges
+  #   sample(50000)       # Randomly select 50,000 edges
 }
 
 # Assuming you have a list of file paths for the networks
@@ -26,7 +30,7 @@ network_files
 
 # Load and process each network
 network_list <- map(network_files, read_and_sort_network)
-network_list[[1]]$Score
+# network_list[[1]]$Score
 
 # Function to calculate Jaccard Index for two networks
 calculate_jaccard <- function(network1, network2) {

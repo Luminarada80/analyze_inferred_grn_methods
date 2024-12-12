@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ========= K562 CellOracle vs LINGER ===========
+# # ========= K562 CellOracle vs LINGER ===========
 # python3 Compare_Inferred_GRN_Methods.py \
 #     --input_directory "K562_INPUT" \
 #     --batch_name "K562"
@@ -11,14 +11,14 @@
 #     --batch_name "macrophage"
 
 # ====== K562 RN118 KNOCKOUT GROUND TRUTH =======
-python3 Compare_Inferred_GRN_Methods.py \
-    --input_directory "K526_RN118_INPUT" \
-    --batch_name "K562_RN118"
+# python3 Compare_Inferred_GRN_Methods.py \
+#     --input_directory "K562_RN118_INPUT" \
+#     --batch_name "K562_RN118"
 
 # ====== K562 RN119 KNOCKOUT GROUND TRUTH =======
-python3 Compare_Inferred_GRN_Methods.py \
-    --input_directory "K526_RN119_INPUT" \
-    --batch_name "K562_RN119"
+# python3 Compare_Inferred_GRN_Methods.py \
+#     --input_directory "K562_RN119_INPUT" \
+#     --batch_name "K562_RN119"
 
 # =========== MACROPHAGE STABILITY ==============
 # for ((i=1; i<=4; i++)); do
@@ -40,3 +40,19 @@ python3 Compare_Inferred_GRN_Methods.py \
 #     --batch_name "K562_stability" \
 #     --method_input_path "/gpfs/Labs/Uzun/RESULTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/K562_STABILITY_RESULTS/LINGER_TRAINED_MODELS" \
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
+
+# # ======= K562 CELL LEVEL LINGER GRN ========
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "cell_specific_trans_regulatory.txt" \
+#     --method_name "LINGER" \
+#     --batch_name "K562_cell_level" \
+#     --method_input_path "/gpfs/Labs/Uzun/RESULTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/K562_RESULTS/LINGER_TRAINED_MODELS/K562_human_filtered/CELL_SPECIFIC_GRNS" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
+
+# ======= K562 CELL LEVEL LINGER GRN ========
+python3 Analyze_Single_Cell_GRN.py \
+    --inferred_net_filename "cell_specific_trans_regulatory.txt" \
+    --method_name "LINGER" \
+    --batch_name "macrophage_cell_level" \
+    --method_input_path "/gpfs/Labs/Uzun/RESULTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/MACROPHAGE_RESULTS/LINGER_TRAINED_MODELS/1/CELL_SPECIFIC_GRNS" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"

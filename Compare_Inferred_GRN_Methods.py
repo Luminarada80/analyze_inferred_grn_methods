@@ -350,7 +350,7 @@ def main():
             plotting.plot_inference_score_histogram(
                 inferred_network_df,
                  method,
-                 f'./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_score_distribution.png')
+                 f'./OUTPUT/{method}/{batch_name}/{method.lower()}_inferred_network_score_distribution.png')
             
             # ======================= PREPROCESSING ============================
             sample_ground_truth = ground_truth.copy()
@@ -414,9 +414,9 @@ def main():
             size_df = pd.DataFrame(network_sizes)
 
             # Define output paths
-            os.makedirs(f"./OUTPUT/{method}/{sample}", exist_ok=True)
-            ground_truth_size_path = f"./OUTPUT/{method}/{sample}/{method.lower()}_ground_truth_size_{sample.lower()}.tsv"
-            inferred_network_size_path = f"./OUTPUT/{method}/{sample}/{method.lower()}_inferred_network_size_{sample.lower()}.tsv"
+            os.makedirs(f"./OUTPUT/{method}/{batch_name}", exist_ok=True)
+            ground_truth_size_path = f"./OUTPUT/{method}/{batch_name}/{method.lower()}_ground_truth_size_{sample.lower()}.tsv"
+            inferred_network_size_path = f"./OUTPUT/{method}/{batch_name}/{method.lower()}_inferred_network_size_{sample.lower()}.tsv"
 
             # Write the sizes to TSV files
             size_df[["Type", "Ground Truth TFs", "Ground Truth TGs", "Ground Truth Edges"]].to_csv(
@@ -446,7 +446,7 @@ def main():
             plotting.plot_multiple_histogram_with_thresholds(
                 histogram_ground_truth_dict,
                 histogram_inferred_network_dict,
-                save_path=f'./OUTPUT/{method}/{sample}/histogram_with_threshold'
+                save_path=f'./OUTPUT/{method}/{batch_name}/histogram_with_threshold'
                 )
 
             # Create the randomized inference scores and calculate accuracy metrics
@@ -454,7 +454,7 @@ def main():
             randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
                 sample_ground_truth,
                 inferred_network_df,
-                histogram_save_path=f'./OUTPUT/{method}/{sample}/randomized_histogram_with_threshold',
+                histogram_save_path=f'./OUTPUT/{method}/{batch_name}/randomized_histogram_with_threshold',
                 random_method="random_permutation"
                 )
             
@@ -466,14 +466,14 @@ def main():
             
             # Write out the accuracy metrics to a tsv file
             logging.debug(f'\t\tWriting accuracy metrics to a tsv file') 
-            with open(f'./OUTPUT/{method.upper()}/{sample}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
+            with open(f'./OUTPUT/{method.upper()}/{batch_name}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
                 accuracy_metric_file.write(f'Metric\tScore\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
                     total_accuracy_metrics[method][sample][metric_name] = score
                         
             # Write out the randomized accuracy metrics to a tsv file
-            with open(f'./OUTPUT/{method.upper()}/{sample}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
+            with open(f'./OUTPUT/{method.upper()}/{batch_name}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
                 random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{uniform_accuracy_metric_dict[metric_name]:4f}\n')
@@ -509,8 +509,8 @@ def main():
             }
             
             logging.debug(f'\t\tPlotting the normal and randomized AUROC and AUPRC graphs') 
-            plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{method}/{sample}/randomized_auroc_auprc.png')
-            plotting.plot_auroc_auprc(confusion_matrix_with_method, f'./OUTPUT/{method}/{sample}/auroc_auprc.png')
+            plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{method}/{batch_name}/randomized_auroc_auprc.png')
+            plotting.plot_auroc_auprc(confusion_matrix_with_method, f'./OUTPUT/{method}/{batch_name}/auroc_auprc.png')
 
             logging.debug(f'\t\tUpdating the total accuracy metrics for the current method') 
             # Add the auroc and auprc values to the total accuracy metric dictionaries
@@ -534,12 +534,53 @@ def main():
         plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'{comparision_output_path}/{method.lower()}_randomized_auroc_auprc.png')
     
     logging.info(f'\nPlotting AUROC and AUPRC comparing all methods')
-    
     plotting.plot_multiple_method_auroc_auprc(total_method_confusion_scores, f'{comparision_output_path}/auroc_auprc_combined.png')
+    
+    # logging.info(f'\nPlotting AUROC and AUPRC for each method plus random')
+    # all_method_plus_rand_scores = {}
+    # for method in total_method_confusion_scores:
+    #     print(f'{method}')
+    #     if method not in all_method_plus_rand_scores:
+    #         all_method_plus_rand_scores[method] = {}
+        
+            
+    #     if 'original' not in all_method_plus_rand_scores[method]:
+    #         all_method_plus_rand_scores[method]['original'] = {}
+            
+    #     if 'random' not in all_method_plus_rand_scores[method]:
+    #         all_method_plus_rand_scores[method]['random'] = {}
+        
+        
+    #     print()
+    #     all_method_plus_rand_scores[method]['original']['y_true'] = {total_method_confusion_scores[method]['y_true']}
+    #     all_method_plus_rand_scores[method]['random']['y_true'] = {randomized_method_dict[method]['y_true']}
+        
+    #     all_method_plus_rand_scores[method]['original']['y_false'] = {total_method_confusion_scores[method]['y_false']}
+    #     all_method_plus_rand_scores[method]['random']['y_false'] = {randomized_method_dict[method]['y_false']}
+        
+    #     print(f'\t\toriginal y_true length = {len(total_method_confusion_scores[method]["y_true"])}')
+    #     print(f'\t\trandom y_true length = {len(randomized_method_dict[method]["y_true"])}')
+        
+    #     print(f'\t\toriginal y_false length = {len(total_method_confusion_scores[method]["y_false"])}')
+    #     print(f'\t\trandom y_false length = {len(randomized_method_dict[method]["y_false"])}')
+        
+    
+    
+    
     
     
     write_method_accuracy_metric_file(total_accuracy_metrics, comparision_output_path)
     write_method_accuracy_metric_file(random_accuracy_metrics, comparision_output_path)
+    
+    logging.info(f'\nAUROC and AUPRC')
+    for method, sample_dict in total_accuracy_metrics.items():
+        print(f'{method}')
+        for sample_name, accuracy_metrics_dict in sample_dict.items():
+            print(f'\tSample {sample_name}')
+            print(f'\t\tAUROC = {accuracy_metrics_dict["auroc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["auroc"]:.2f}')
+            print(f'\t\tAUPRC = {accuracy_metrics_dict["auprc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["auprc"]:.2f}')
+    
+    
                 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')  

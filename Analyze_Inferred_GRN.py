@@ -328,7 +328,7 @@ def main():
         for subfile in os.listdir(os.path.join(METHOD_INPUT_PATH, folder)):
             if INFERRED_NET_FILENAME in subfile:
                 logging.info(f'  └──{folder}')
-                # print(f'Found inferred network file for sample {folder}')
+                print(f'Found inferred network file for sample {folder}')
                 inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, folder, subfile)
     
     print(log_message("INFERENCE METHOD ANALYSIS AND COMPARISON"))
@@ -479,7 +479,7 @@ def main():
         plotting.plot_multiple_histogram_with_thresholds(
             histogram_ground_truth_dict,
             histogram_inferred_network_dict,
-            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/histogram_with_threshold'
+            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/histogram_with_threshold'
             )
 
         # Create the randomized inference scores and calculate accuracy metrics
@@ -487,7 +487,7 @@ def main():
         randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
             sample_ground_truth,
             inferred_network_df,
-            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{sample}/randomized_histogram_with_threshold',
+            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/randomized_histogram_with_threshold',
             random_method="random_permutation"
             )
         
@@ -499,14 +499,14 @@ def main():
         
         # Write out the accuracy metrics to a tsv file
         logging.debug(f'\t\tWriting accuracy metrics to a tsv file') 
-        with open(f'./OUTPUT/{METHOD_NAME.upper()}/{sample}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
+        with open(f'./OUTPUT/{METHOD_NAME.upper()}/{BATCH_NAME}/{sample}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
             accuracy_metric_file.write(f'Metric\tScore\n')
             for metric_name, score in accuracy_metric_dict.items():
                 accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
                 total_accuracy_metrics[METHOD_NAME][sample][metric_name] = score
                     
         # Write out the randomized accuracy metrics to a tsv file
-        with open(f'./OUTPUT/{METHOD_NAME.upper()}/{sample}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
+        with open(f'./OUTPUT/{METHOD_NAME.upper()}/{BATCH_NAME}/{sample}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
             random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
             for metric_name, score in accuracy_metric_dict.items():
                 random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{uniform_accuracy_metric_dict[metric_name]:4f}\n')
