@@ -180,7 +180,8 @@ def read_input_files(input_directory) -> tuple[str, list, list, dict]:
 
 def load_inferred_network_df(
     inferred_network_file: str,
-    separator: str
+    separator: str,
+    index_col = None,
     ) -> pd.DataFrame:
     """
     Loads the inferred network file to a dataframe based on the separator.
@@ -192,7 +193,7 @@ def load_inferred_network_df(
         separator (str):
             Pandas separator to use when loading in the dataframe
     """
-    return pd.read_csv(inferred_network_file, sep=separator, index_col=0, header=0)
+    return pd.read_csv(inferred_network_file, sep=separator, index_col=index_col, header=0)
 
 def standardize_ground_truth_format(ground_truth_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -208,8 +209,12 @@ def standardize_ground_truth_format(ground_truth_df: pd.DataFrame) -> pd.DataFra
         ground_truth_df (pd.DataFrame):
             Ground truth dataframe with Source and Target names converted to uppercase
     """
-    ground_truth_df['Source'] = ground_truth_df['Source'].str.upper().str.strip()
-    ground_truth_df['Target'] = ground_truth_df['Target'].str.upper().str.strip()
+    ground_truth_df.columns = ground_truth_df.columns.str.strip().str.replace('"', '')
+    
+    ground_truth_df['Source'] = ground_truth_df['Source'].str.upper().str.strip().str.replace('"', '')
+    ground_truth_df['Target'] = ground_truth_df['Target'].str.upper().str.strip().str.replace('"', '')
+    
+    print(ground_truth_df.head())
     
     return ground_truth_df
 
@@ -313,18 +318,20 @@ def main():
     random_accuracy_metrics = {}
     
     logging.info(f'\tReading ground truth')
-    ground_truth = pd.read_csv(ground_truth_path, sep='\t', quoting=csv.QUOTE_NONE, on_bad_lines='skip', header=0)
+    ground_truth = pd.read_csv(ground_truth_path, sep=',', quoting=csv.QUOTE_NONE, on_bad_lines='skip', header=0)
     ground_truth = standardize_ground_truth_format(ground_truth)
+    
+    randomized_method_dict = {}
     
     # PROCESSING EACH METHOD
     for method in method_names:
-
+        if method not in randomized_method_dict:
+            randomized_method_dict[method] = {}
+ 
         logging.info(f'\nProcessing samples for {method}')
         total_method_confusion_scores[method] = {'y_true':[], 'y_scores':[]}
-        randomized_method_dict = {
-                f"{method} Original": {'y_true':[], 'y_scores':[]},
-                f"{method} Randomized": {'y_true':[], 'y_scores':[]}
-            }
+        randomized_method_dict[method][f"{method} Original"] = {'y_true':[], 'y_scores':[]}
+        randomized_method_dict[method][f"{method} Randomized"] = {'y_true':[], 'y_scores':[]}
         total_accuracy_metrics[method] = {}
         random_accuracy_metrics[method] = {}
         method_samples = [sample for sample in sample_names if sample in inferred_network_dict[method]]
@@ -334,14 +341,21 @@ def main():
             logging.info(f'\tAnalyzing {sample}')
             # ================== READING IN AND STANDARDIZING INFERRED DATAFRAMES ===============
             inferred_network_file = inferred_network_dict[method][sample]
-            sep = ',' if method == 'CELL_ORACLE' else '\t'
-            inferred_network_df = load_inferred_network_df(inferred_network_file, sep)
+            sep = ',' if method == 'CELL_ORACLE' or method == 'TRIPOD' else '\t'
+            index_col=False if method == 'CELL_ORACLE' or method == 'TRIPOD' else 0
             
+            inferred_network_df = load_inferred_network_df(inferred_network_file, sep, index_col)
+                        
             if method == "CELL_ORACLE":
                 inferred_network_df = grn_formatting.create_standard_dataframe(
                     inferred_network_df, source_col='source', target_col='target', score_col='coef_abs'
                 )
-                
+            
+            elif method == "TRIPOD":
+                inferred_network_df = grn_formatting.create_standard_dataframe(
+                    inferred_network_df, source_col='TF', target_col='gene', score_col='abs_coef'
+                )
+            
             else:
                 inferred_network_df = grn_formatting.create_standard_dataframe(
                     inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
@@ -497,11 +511,11 @@ def main():
             total_method_confusion_scores[method]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
             
             # Record the original and randomized y_true and y_scores for each sample to compare against the randomized scores
-            randomized_method_dict[f"{method} Original"]['y_true'].append(confusion_matrix_score_dict['y_true'])
-            randomized_method_dict[f"{method} Original"]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
+            randomized_method_dict[method][f"{method} Original"]['y_true'].append(confusion_matrix_score_dict['y_true'])
+            randomized_method_dict[method][f"{method} Original"]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
             
-            randomized_method_dict[f"{method} Randomized"]['y_true'].append(uniform_confusion_matrix_dict['y_true'])
-            randomized_method_dict[f"{method} Randomized"]['y_scores'].append(uniform_confusion_matrix_dict['y_scores'])
+            randomized_method_dict[method][f"{method} Randomized"]['y_true'].append(uniform_confusion_matrix_dict['y_true'])
+            randomized_method_dict[method][f"{method} Randomized"]['y_scores'].append(uniform_confusion_matrix_dict['y_scores'])
             
             sample_randomized_method_dict = {
                 f"{method} Original": {'y_true':confusion_matrix_score_dict['y_true'], 'y_scores':confusion_matrix_score_dict['y_scores']},
@@ -531,43 +545,59 @@ def main():
             gc.collect()
 
         logging.info(f'\tPlotting {method.lower()} original vs randomized AUROC and AUPRC for all samples')
-        plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'{comparision_output_path}/{method.lower()}_randomized_auroc_auprc.png')
+        plotting.plot_multiple_method_auroc_auprc(randomized_method_dict[method], f'{comparision_output_path}/{method.lower()}_randomized_auroc_auprc.png')
     
     logging.info(f'\nPlotting AUROC and AUPRC comparing all methods')
     plotting.plot_multiple_method_auroc_auprc(total_method_confusion_scores, f'{comparision_output_path}/auroc_auprc_combined.png')
     
+    # # Plotting AUROC and AUPRC for each method plus random
     # logging.info(f'\nPlotting AUROC and AUPRC for each method plus random')
     # all_method_plus_rand_scores = {}
     # for method in total_method_confusion_scores:
-    #     print(f'{method}')
-    #     if method not in all_method_plus_rand_scores:
-    #         all_method_plus_rand_scores[method] = {}
         
+        
+    #     print(f'Current method: {method}')
+    #     print(f'all_method_plus_rand_scores: {all_method_plus_rand_scores.keys()}')
+    #     print(f'randomized_method_dict keys: {randomized_method_dict.keys()}')
+    #     print(f'total_method_confusion_scores keys: {total_method_confusion_scores.keys()}')
+        
+    #     for i, samples in enumerate(total_method_confusion_scores[method]['y_true']):
+    #         if f'sample_{i}' not in all_method_plus_rand_scores:
+    #             all_method_plus_rand_scores[f'sample_{i}'] = {}
+    #             all_method_plus_rand_scores[f'sample_{i}'] = {}
+                
+    #         if method not in all_method_plus_rand_scores[f'sample_{i}']:
+    #             all_method_plus_rand_scores[f'sample_{i}'][method] = {}
+    #             all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"] = {}
             
-    #     if 'original' not in all_method_plus_rand_scores[method]:
-    #         all_method_plus_rand_scores[method]['original'] = {}
+    #         print(f'len(total_method_confusion_scores[method]["y_true"]): {len(total_method_confusion_scores[method]["y_true"])}')
+    #         if len(total_method_confusion_scores[method]['y_true']) == len(inferred_network_dict[method]):
             
-    #     if 'random' not in all_method_plus_rand_scores[method]:
-    #         all_method_plus_rand_scores[method]['random'] = {}
-        
-        
-    #     print()
-    #     all_method_plus_rand_scores[method]['original']['y_true'] = {total_method_confusion_scores[method]['y_true']}
-    #     all_method_plus_rand_scores[method]['random']['y_true'] = {randomized_method_dict[method]['y_true']}
-        
-    #     all_method_plus_rand_scores[method]['original']['y_false'] = {total_method_confusion_scores[method]['y_false']}
-    #     all_method_plus_rand_scores[method]['random']['y_false'] = {randomized_method_dict[method]['y_false']}
-        
-    #     print(f'\t\toriginal y_true length = {len(total_method_confusion_scores[method]["y_true"])}')
-    #     print(f'\t\trandom y_true length = {len(randomized_method_dict[method]["y_true"])}')
-        
-    #     print(f'\t\toriginal y_false length = {len(total_method_confusion_scores[method]["y_false"])}')
-    #     print(f'\t\trandom y_false length = {len(randomized_method_dict[method]["y_false"])}')
-        
-    
-    
-    
-    
+    #             all_method_plus_rand_scores[f'sample_{i}'][method]['y_true'] = total_method_confusion_scores[method]['y_true'][i]
+    #             all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_true'] = randomized_method_dict[method][f"{method} Randomized"]['y_true'][i]
+                
+    #             all_method_plus_rand_scores[f'sample_{i}'][method]['y_scores'] = total_method_confusion_scores[method]['y_scores'][i]
+    #             all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_scores'] = randomized_method_dict[method][f"{method} Randomized"]['y_scores'][i]
+            
+    #         else:
+    #             all_method_plus_rand_scores[f'sample_{i}'][method]['y_true'] = total_method_confusion_scores[method]['y_true']
+    #             all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_true'] = randomized_method_dict[method][f"{method} Randomized"]['y_true']
+                
+    #             all_method_plus_rand_scores[f'sample_{i}'][method]['y_scores'] = total_method_confusion_scores[method]['y_scores']
+    #             all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_scores'] = randomized_method_dict[method][f"{method} Randomized"]['y_scores']
+            
+            
+            
+            # print(all_method_plus_rand_scores[method])
+            
+            # plotting.plot_multiple_method_auroc_auprc(all_method_plus_rand_scores[f'sample_{i}'], f'{comparision_output_path}/auroc_auprc_sample_{i}.png')
+
+            
+            # print(f'\t\toriginal y_true length = {len(total_method_confusion_scores[method]["y_true"][f"sample_{i}"])}')
+            # print(f'\t\trandom y_true length = {len(randomized_method_dict[method][f"{method} Randomized"]["y_true"][f"sample_{i}"])}')
+            
+            # print(f'\t\toriginal y_scores length = {len(total_method_confusion_scores[method]["y_scores"][f"sample_{i}"])}')
+            # print(f'\t\trandom y_scores length = {len(randomized_method_dict[method][f"{method} Randomized"]["y_scores"][f"sample_{i}"])}')
     
     write_method_accuracy_metric_file(total_accuracy_metrics, comparision_output_path)
     write_method_accuracy_metric_file(random_accuracy_metrics, comparision_output_path)
@@ -579,6 +609,8 @@ def main():
             print(f'\tSample {sample_name}')
             print(f'\t\tAUROC = {accuracy_metrics_dict["auroc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["auroc"]:.2f}')
             print(f'\t\tAUPRC = {accuracy_metrics_dict["auprc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["auprc"]:.2f}')
+            
+        
     
     
                 
