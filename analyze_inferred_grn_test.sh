@@ -13,14 +13,14 @@
 #     --batch_name "K562"
 
 # ====== MACROPHAGE CellOracle vs LINGER ========
-# python3 Compare_Inferred_GRN_Methods.py \
-#     --input_directory "MACROPHAGE_INPUT" \
-#     --batch_name "macrophage"
-
-# ====== MACROPHAGE CellOracle vs LINGER ========
 python3 Compare_Inferred_GRN_Methods.py \
-    --input_directory "TRIPOD_INPUT" \
-    --batch_name "Tripod"
+    --input_directory "MACROPHAGE_INPUT" \
+    --batch_name "macrophage"
+
+# ====== mESC TRIPOD ========
+# python3 Compare_Inferred_GRN_Methods.py \
+#     --input_directory "TRIPOD_INPUT" \
+#     --batch_name "Tripod"
 
 # ====== K562 RN118 KNOCKOUT GROUND TRUTH =======
 # python3 Compare_Inferred_GRN_Methods.py \
