@@ -232,7 +232,8 @@ def main():
     random_accuracy_metrics = {}
     
     logging.info(f'\tReading ground truth')
-    ground_truth = pd.read_csv(GROUND_TRUTH_PATH, sep='\t', quoting=csv.QUOTE_NONE, on_bad_lines='skip', header=0)
+    ground_truth = pd.read_csv(GROUND_TRUTH_PATH, sep=',', quoting=csv.QUOTE_NONE, on_bad_lines='skip', header=True)
+    print(ground_truth.head())
     ground_truth = standardize_ground_truth_format(ground_truth)
     
     # PROCESSING EACH METHOD

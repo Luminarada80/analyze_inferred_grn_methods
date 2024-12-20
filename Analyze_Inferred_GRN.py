@@ -192,7 +192,7 @@ def load_inferred_network_df(
         separator (str):
             Pandas separator to use when loading in the dataframe
     """
-    return pd.read_csv(inferred_network_file, sep=separator, index_col=0, header=0)
+    return pd.read_csv(inferred_network_file, sep=separator, header=0)
 
 def standardize_ground_truth_format(ground_truth_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -325,11 +325,11 @@ def main():
     for folder in os.listdir(METHOD_INPUT_PATH):
         
         # In each subfile of the main GRN output path, find any file that matches the inferred net filename for the method
-        for subfile in os.listdir(os.path.join(METHOD_INPUT_PATH, folder)):
-            if INFERRED_NET_FILENAME in subfile:
-                logging.info(f'  └──{folder}')
-                print(f'Found inferred network file for sample {folder}')
-                inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, folder, subfile)
+        # for subfile in os.listdir(os.path.join(METHOD_INPUT_PATH, folder)):
+        if INFERRED_NET_FILENAME in folder:
+                # logging.info(f'  └──{folder}')
+                # print(f'Found inferred network file for sample {folder}')
+            inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, folder)
     
     print(log_message("INFERENCE METHOD ANALYSIS AND COMPARISON"))
     
@@ -371,6 +371,7 @@ def main():
             )
             
         else:
+            print(inferred_network_df.head())
             inferred_network_df = grn_formatting.create_standard_dataframe(
                 inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
             )
