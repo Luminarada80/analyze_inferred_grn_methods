@@ -256,7 +256,7 @@ def create_ground_truth_copies(
     
     return ground_truth_dict
 
-def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict, output_dir) -> None:
+def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict, output_dir, name) -> None:
     """
     For each inference method, creates a pandas dataframe of the accuracy metrics for each sample and 
     outputs the results to a tsv file.
@@ -271,7 +271,7 @@ def write_method_accuracy_metric_file(total_accuracy_metric_dict: dict, output_d
     """
     for method in total_accuracy_metric_dict.keys():
         total_accuracy_metrics_df = pd.DataFrame(total_accuracy_metric_dict[method]).T
-        total_accuracy_metrics_df.to_csv(f'{output_dir}/{method.lower()}_total_accuracy_metrics.tsv', sep='\t') 
+        total_accuracy_metrics_df.to_csv(f'{output_dir}/{method.lower()}{name}_total_accuracy_metrics.tsv', sep='\t') 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process Inferred GRNs.")
@@ -308,6 +308,9 @@ def main():
     
     if not os.path.exists(comparision_output_path):
         os.makedirs(comparision_output_path)
+        
+    if not os.path.exists(randomized_accuracy_metric_path):
+        os.makedirs(randomized_accuracy_metric_path)
     
     print(log_message("INFERENCE METHOD ANALYSIS AND COMPARISON"))
     
@@ -605,8 +608,8 @@ def main():
             # print(f'\t\toriginal y_scores length = {len(total_method_confusion_scores[method]["y_scores"][f"sample_{i}"])}')
             # print(f'\t\trandom y_scores length = {len(randomized_method_dict[method][f"{method} Randomized"]["y_scores"][f"sample_{i}"])}')
     
-    write_method_accuracy_metric_file(total_accuracy_metrics, comparision_output_path)
-    write_method_accuracy_metric_file(random_accuracy_metrics, randomized_accuracy_metric_path)
+    write_method_accuracy_metric_file(total_accuracy_metrics, comparision_output_path, "")
+    write_method_accuracy_metric_file(random_accuracy_metrics, randomized_accuracy_metric_path, "_randomized")
     
     logging.info(f'\nAUROC and AUPRC')
     for method, sample_dict in total_accuracy_metrics.items():
