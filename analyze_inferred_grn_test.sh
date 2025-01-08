@@ -62,12 +62,19 @@
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
 
 # ============= SCENIC+ mESC GRN ===============
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "scenic_plus_inferred_grn_mESC.tsv" \
+#     --method_name "SCENIC_PLUS" \
+#     --batch_name "test_mESC" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/outs/" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
+
 python3 Analyze_Inferred_GRN.py \
-    --inferred_net_filename "scenic_plus_inferred_grn_mESC.tsv" \
-    --method_name "SCENIC_PLUS" \
-    --batch_name "test_mESC" \
-    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/outs/" \
-    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
+    --inferred_net_filename "inferred_grn.tsv" \
+    --method_name "CUSTOM_GRN" \
+    --batch_name "test_macrophage" \
+    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MACROPHAGE_STABILITY/RN204_macrophage_ground_truth.tsv"
 
 # ======= MACROPHAGE CELL LEVEL LINGER GRN ========
 # python3 Analyze_Single_Cell_GRN.py \

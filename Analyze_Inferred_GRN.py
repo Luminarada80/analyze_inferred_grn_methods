@@ -370,6 +370,11 @@ def main():
                 inferred_network_df, source_col='source', target_col='target', score_col='coef_abs'
             )
             
+        elif METHOD_NAME == "CUSTOM_GRN":
+            inferred_network_df = grn_formatting.create_standard_dataframe(
+                inferred_network_df, source_col='Source', target_col='Target', score_col='Weighted_Score'
+            )
+            
         else:
             print(inferred_network_df.head())
             inferred_network_df = grn_formatting.create_standard_dataframe(
@@ -414,8 +419,8 @@ def main():
             sample_ground_truth, inferred_network_df
         )
         
-        inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
-        sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
+        # inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
+        # sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
         
         inferred_network_df = inferred_network_df.dropna(subset=['Score'])
         sample_ground_truth = sample_ground_truth.dropna(subset=['Score'])
@@ -514,12 +519,12 @@ def main():
                 random_accuracy_metrics[METHOD_NAME][sample][metric_name] = uniform_accuracy_metric_dict[metric_name]
         
         # Calculate the normal AUROC and AUPRC
-        logging.debug(f'\t\tCalculating normal AUROC and AUPRC') 
+        logging.info(f'\t\tCalculating normal AUROC and AUPRC') 
         auroc = grn_stats.calculate_auroc(confusion_matrix_score_dict)
         auprc = grn_stats.calculate_auprc(confusion_matrix_score_dict)
         
         # Calculate the randomized AUPRC and randomized AUPRC
-        logging.debug(f'\t\tCalculating randomized AUROC and AUPRC') 
+        logging.info(f'\t\tCalculating randomized AUROC and AUPRC') 
         randomized_auroc = grn_stats.calculate_auroc(uniform_confusion_matrix_dict)
         randomized_auprc = grn_stats.calculate_auprc(uniform_confusion_matrix_dict)
     
