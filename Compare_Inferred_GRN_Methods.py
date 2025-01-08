@@ -304,6 +304,7 @@ def main():
     
     all_method_names = "_vs_".join([method for method in method_names])
     comparision_output_path = f'./OUTPUT/{batch_name}_{all_method_names}_all_samples'
+    randomized_accuracy_metric_path = f'./OUTPUT/randomized_{batch_name}_{all_method_names}_all_samples'
     
     if not os.path.exists(comparision_output_path):
         os.makedirs(comparision_output_path)
@@ -605,7 +606,7 @@ def main():
             # print(f'\t\trandom y_scores length = {len(randomized_method_dict[method][f"{method} Randomized"]["y_scores"][f"sample_{i}"])}')
     
     write_method_accuracy_metric_file(total_accuracy_metrics, comparision_output_path)
-    write_method_accuracy_metric_file(random_accuracy_metrics, comparision_output_path)
+    write_method_accuracy_metric_file(random_accuracy_metrics, randomized_accuracy_metric_path)
     
     logging.info(f'\nAUROC and AUPRC')
     for method, sample_dict in total_accuracy_metrics.items():
