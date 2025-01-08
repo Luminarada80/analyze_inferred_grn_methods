@@ -536,8 +536,8 @@ def main():
             total_accuracy_metrics[method][sample]['auroc'] = auroc
             total_accuracy_metrics[method][sample]['auprc'] = auprc
             
-            random_accuracy_metrics[method][sample]['auroc'] = randomized_auroc
-            random_accuracy_metrics[method][sample]['auprc'] = randomized_auprc
+            random_accuracy_metrics[method][sample]['random_auroc'] = randomized_auroc
+            random_accuracy_metrics[method][sample]['random_auprc'] = randomized_auprc
             
             # Update the accuracy metrics with the confusion matrix keys
             confusion_matrix_keys = ["true_positive", "true_negative", "false_positive", "false_negative"]
