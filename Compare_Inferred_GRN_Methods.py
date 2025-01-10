@@ -403,8 +403,8 @@ def main():
                 sample_ground_truth, inferred_network_df
             )
             
-            inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
-            sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
+            inferred_network_df["Score"] = np.log2(np.abs(inferred_network_df["Score"]))
+            sample_ground_truth["Score"] = np.log2(np.abs(sample_ground_truth["Score"]))
             
             inferred_network_df = inferred_network_df.dropna(subset=['Score'])
             sample_ground_truth = sample_ground_truth.dropna(subset=['Score'])
