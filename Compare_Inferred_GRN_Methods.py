@@ -555,52 +555,57 @@ def main():
 
         logging.info(f'\tPlotting {method.lower()} original vs randomized AUROC and AUPRC for all samples')
         plotting.plot_multiple_method_auroc_auprc(randomized_method_dict[method], f'{comparision_output_path}/{method.lower()}_randomized_auroc_auprc.png')
-    
+        
+        sample_dict = {method: randomized_method_dict[method][f"{method} Original"]}
+        plotting.plot_all_samples_auroc_auprc(sample_dict, f'{comparision_output_path}/{method.lower()}_all_sample_auroc_auprc.png')
+
+        
+        
     logging.info(f'\nPlotting AUROC and AUPRC comparing all methods')
     plotting.plot_multiple_method_auroc_auprc(total_method_confusion_scores, f'{comparision_output_path}/auroc_auprc_combined.png')
     
     # Plotting AUROC and AUPRC for each method plus random
     logging.info(f'\nPlotting AUROC and AUPRC for each method plus random')
     all_method_plus_rand_scores = {}
+
+    # Iterate through methods
     for method in total_method_confusion_scores:
         
-        
-        print(f'Current method: {method}')
-        print(f'all_method_plus_rand_scores: {all_method_plus_rand_scores.keys()}')
-        print(f'randomized_method_dict keys: {randomized_method_dict.keys()}')
-        print(f'total_method_confusion_scores keys: {total_method_confusion_scores.keys()}')
-        
-        for i, samples in enumerate(total_method_confusion_scores[method]['y_true']):
-            if f'sample_{i}' not in all_method_plus_rand_scores:
-                all_method_plus_rand_scores[f'sample_{i}'] = {}
-                all_method_plus_rand_scores[f'sample_{i}'] = {}
-                
-            if method not in all_method_plus_rand_scores[f'sample_{i}']:
-                all_method_plus_rand_scores[f'sample_{i}'][method] = {}
-                all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"] = {}
+        # Iterate through samples for the current method
+        for i, y_true in enumerate(total_method_confusion_scores[method]['y_true']):
+            sample_key = f'sample_{i}'
             
-            print(f'len(total_method_confusion_scores[method]["y_true"]): {len(total_method_confusion_scores[method]["y_true"])}')
-            if len(total_method_confusion_scores[method]['y_true']) == len(inferred_network_dict[method]):
+            # Initialize sample key in the dictionary if not already present
+            if sample_key not in all_method_plus_rand_scores:
+                all_method_plus_rand_scores[sample_key] = {}
             
-                all_method_plus_rand_scores[f'sample_{i}'][method]['y_true'] = total_method_confusion_scores[method]['y_true'][i]
-                all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_true'] = randomized_method_dict[method][f"{method} Randomized"]['y_true'][i]
-                
-                all_method_plus_rand_scores[f'sample_{i}'][method]['y_scores'] = total_method_confusion_scores[method]['y_scores'][i]
-                all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_scores'] = randomized_method_dict[method][f"{method} Randomized"]['y_scores'][i]
+            # Initialize method entries if not already present
+            if method not in all_method_plus_rand_scores[sample_key]:
+                all_method_plus_rand_scores[sample_key][method] = {}
+            
+            # Extract normal scores
+            method_normal_score_y_true = total_method_confusion_scores[method]['y_true'][i]
+            method_normal_score_y_scores = total_method_confusion_scores[method]['y_scores'][i]
+            
+            # Extract randomized scores
+            method_randomized_score_y_true = randomized_method_dict[method][f"{method} Randomized"]['y_true'][i]
+            method_randomized_score_y_scores = randomized_method_dict[method][f"{method} Randomized"]['y_scores'][i]
+            
+            # Store data in the dictionary
+            all_method_plus_rand_scores[sample_key][method] = {
+                "normal_y_true": method_normal_score_y_true,
+                "normal_y_scores": method_normal_score_y_scores,
+                "randomized_y_true": method_randomized_score_y_true,
+                "randomized_y_scores": method_randomized_score_y_scores,
+            }
 
-                plotting.plot_auroc_auprc(all_method_plus_rand_scores[f'sample_{i}'], f'{comparision_output_path}/auroc_auprc_sample_{i}.png')
-                
-                
-            else:
-                all_method_plus_rand_scores[f'sample_{i}'][method]['y_true'] = total_method_confusion_scores[method]['y_true']
-                all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_true'] = randomized_method_dict[method][f"{method} Randomized"]['y_true']
-                
-                all_method_plus_rand_scores[f'sample_{i}'][method]['y_scores'] = total_method_confusion_scores[method]['y_scores']
-                all_method_plus_rand_scores[f'sample_{i}'][f"{method} Randomized"]['y_scores'] = randomized_method_dict[method][f"{method} Randomized"]['y_scores']
-            
-                plotting.plot_multiple_method_auroc_auprc(all_method_plus_rand_scores[f'sample_{i}'], f'{comparision_output_path}/auroc_auprc_sample_{i}.png')
-                
-            
+
+    # Plotting for each sample
+    for sample_key, sample_data in all_method_plus_rand_scores.items():
+        plotting.plot_normal_and_randomized_roc_prc(
+            sample_data,
+            f'{comparision_output_path}/auroc_auprc_{sample_key}.png'
+        )
             
             # print(f'\t\toriginal y_true length = {len(total_method_confusion_scores[method]["y_true"][f"sample_{i}"])}')
             # print(f'\t\trandom y_true length = {len(randomized_method_dict[method][f"{method} Randomized"]["y_true"][f"sample_{i}"])}')
@@ -616,8 +621,8 @@ def main():
         print(f'{method}')
         for sample_name, accuracy_metrics_dict in sample_dict.items():
             print(f'\tSample {sample_name}')
-            print(f'\t\tAUROC = {accuracy_metrics_dict["auroc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["auroc"]:.2f}')
-            print(f'\t\tAUPRC = {accuracy_metrics_dict["auprc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["auprc"]:.2f}')
+            print(f'\t\tAUROC = {accuracy_metrics_dict["auroc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["random_auroc"]:.2f}')
+            print(f'\t\tAUPRC = {accuracy_metrics_dict["auprc"]:.2f}, random = {random_accuracy_metrics[method][sample_name]["random_auprc"]:.2f}')
             
         
     

@@ -13,9 +13,9 @@
 #     --batch_name "K562"
 
 # ====== MACROPHAGE CellOracle vs LINGER ========
-# python3 Compare_Inferred_GRN_Methods.py \
-#     --input_directory "MACROPHAGE_INPUT" \
-#     --batch_name "macrophage"
+python3 Compare_Inferred_GRN_Methods.py \
+    --input_directory "MACROPHAGE_INPUT" \
+    --batch_name "macrophage"
 
 # ====== mESC TRIPOD ========
 # python3 Compare_Inferred_GRN_Methods.py \
@@ -69,12 +69,12 @@
 #     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/outs/" \
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
 
-python3 Analyze_Inferred_GRN.py \
-    --inferred_net_filename "inferred_grn.tsv" \
-    --method_name "CUSTOM_GRN" \
-    --batch_name "test_macrophage" \
-    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
-    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MACROPHAGE_STABILITY/RN204_macrophage_ground_truth.tsv"
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "inferred_grn.tsv" \
+#     --method_name "CUSTOM_GRN" \
+#     --batch_name "test_macrophage" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MACROPHAGE_STABILITY/RN204_macrophage_ground_truth.tsv"
 
 # ======= MACROPHAGE CELL LEVEL LINGER GRN ========
 # python3 Analyze_Single_Cell_GRN.py \
