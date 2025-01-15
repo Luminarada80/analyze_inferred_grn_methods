@@ -557,7 +557,7 @@ def main():
         plotting.plot_multiple_method_auroc_auprc(randomized_method_dict[method], f'{comparision_output_path}/{method.lower()}_randomized_auroc_auprc.png')
         
         sample_dict = {method: randomized_method_dict[method][f"{method} Original"]}
-        plotting.plot_all_samples_auroc_auprc(sample_dict, f'{comparision_output_path}/{method.lower()}_all_sample_auroc_auprc.png')
+        plotting.plot_all_samples_auroc_auprc(sample_dict, method_samples, f'{comparision_output_path}/{method.lower()}_all_sample_auroc_auprc.png')
 
         
         
