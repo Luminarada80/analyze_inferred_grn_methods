@@ -348,10 +348,7 @@ def main():
 
     logging.info(f'\nProcessing samples for {METHOD_NAME}')
     total_method_confusion_scores[METHOD_NAME] = {'y_true':[], 'y_scores':[]}
-    randomized_method_dict = {
-            f"{METHOD_NAME} Original": {'y_true':[], 'y_scores':[]},
-            f"{METHOD_NAME} Randomized": {'y_true':[], 'y_scores':[]}
-        }
+    randomized_method_dict = {METHOD_NAME: {'normal_y_true':[], 'normal_y_scores':[], 'randomized_y_true':[], 'randomized_y_scores':[]}}
     total_accuracy_metrics[METHOD_NAME] = {}
     random_accuracy_metrics[METHOD_NAME] = {}
     
@@ -535,12 +532,13 @@ def main():
         total_method_confusion_scores[METHOD_NAME]['y_true'].append(confusion_matrix_score_dict['y_true'])
         total_method_confusion_scores[METHOD_NAME]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
         
-        # Record the original and randomized y_true and y_scores for each sample to compare against the randomized scores
-        randomized_method_dict[f"{METHOD_NAME} Original"]['y_true'].append(confusion_matrix_score_dict['y_true'])
-        randomized_method_dict[f"{METHOD_NAME} Original"]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
-        
-        randomized_method_dict[f"{METHOD_NAME} Randomized"]['y_true'].append(uniform_confusion_matrix_dict['y_true'])
-        randomized_method_dict[f"{METHOD_NAME} Randomized"]['y_scores'].append(uniform_confusion_matrix_dict['y_scores'])
+        # Extend the list with values to avoid nesting
+        randomized_method_dict[METHOD_NAME]['normal_y_true'].extend(confusion_matrix_score_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['normal_y_scores'].extend(confusion_matrix_score_dict['y_scores'])
+
+        randomized_method_dict[METHOD_NAME]['randomized_y_true'].extend(uniform_confusion_matrix_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['randomized_y_scores'].extend(uniform_confusion_matrix_dict['y_scores'])
+
         
         sample_randomized_method_dict = {
             f"{METHOD_NAME} Original": {'y_true':confusion_matrix_score_dict['y_true'], 'y_scores':confusion_matrix_score_dict['y_scores']},
@@ -548,7 +546,7 @@ def main():
         }
         
         logging.debug(f'\t\tPlotting the normal and randomized AUROC and AUPRC graphs') 
-        plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/randomized_auroc_auprc.png')
+        # plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/randomized_auroc_auprc.png')
         plotting.plot_auroc_auprc(confusion_matrix_with_method, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/auroc_auprc.png')
 
         logging.debug(f'\t\tUpdating the total accuracy metrics for the current method') 
@@ -574,7 +572,33 @@ def main():
     if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
         os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
         
-    plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
+    # Convert lists to NumPy arrays and concatenate
+    randomized_method_dict[METHOD_NAME]['normal_y_true'] = np.concatenate((
+        randomized_method_dict[METHOD_NAME]['normal_y_true'],
+        np.array(confusion_matrix_score_dict['y_true'])
+    ))
+
+    randomized_method_dict[METHOD_NAME]['normal_y_scores'] = np.concatenate((
+        randomized_method_dict[METHOD_NAME]['normal_y_scores'],
+        np.array(confusion_matrix_score_dict['y_scores'])
+    ))
+
+    randomized_method_dict[METHOD_NAME]['randomized_y_true'] = np.concatenate((
+        randomized_method_dict[METHOD_NAME]['randomized_y_true'],
+        np.array(uniform_confusion_matrix_dict['y_true'])
+    ))
+
+    randomized_method_dict[METHOD_NAME]['randomized_y_scores'] = np.concatenate((
+        randomized_method_dict[METHOD_NAME]['randomized_y_scores'],
+        np.array(uniform_confusion_matrix_dict['y_scores'])
+    ))
+    
+    plotting.plot_normal_and_randomized_roc_prc(
+            randomized_method_dict,
+            f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png'
+        )
+        
+    # plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
     
     write_method_accuracy_metric_file(total_accuracy_metrics, BATCH_NAME)
     write_method_accuracy_metric_file(random_accuracy_metrics, BATCH_NAME)

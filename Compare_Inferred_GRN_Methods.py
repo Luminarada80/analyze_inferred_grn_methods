@@ -573,7 +573,7 @@ def main():
         
         # Iterate through samples for the current method
         for i, y_true in enumerate(total_method_confusion_scores[method]['y_true']):
-            sample_key = f'sample_{i}'
+            sample_key = method_samples[i]
             
             # Initialize sample key in the dictionary if not already present
             if sample_key not in all_method_plus_rand_scores:

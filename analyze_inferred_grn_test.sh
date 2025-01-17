@@ -13,9 +13,9 @@
 #     --batch_name "K562"
 
 # ====== MACROPHAGE CellOracle vs LINGER ========
-python3 Compare_Inferred_GRN_Methods.py \
-    --input_directory "MACROPHAGE_INPUT" \
-    --batch_name "macrophage"
+# python3 Compare_Inferred_GRN_Methods.py \
+#     --input_directory "MACROPHAGE_INPUT" \
+#     --batch_name "macrophage"
 
 # ====== mESC TRIPOD ========
 # python3 Compare_Inferred_GRN_Methods.py \
@@ -62,13 +62,22 @@ python3 Compare_Inferred_GRN_Methods.py \
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
 
 # ============= SCENIC+ mESC GRN ===============
-# python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "scenic_plus_inferred_grn_mESC.tsv" \
-#     --method_name "SCENIC_PLUS" \
-#     --batch_name "test_mESC" \
-#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/outs/" \
-#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
+python3 Analyze_Inferred_GRN.py \
+    --inferred_net_filename "scenic_plus_inferred_grn_mESC.tsv" \
+    --method_name "SCENIC_PLUS" \
+    --batch_name "mESC" \
+    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/mESC/mESC_outs/" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
 
+# ============= SCENIC+ K562 GRN ===============
+python3 Analyze_Inferred_GRN.py \
+    --inferred_net_filename "scenic_plus_inferred_grn_K562.tsv" \
+    --method_name "SCENIC_PLUS" \
+    --batch_name "K562" \
+    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/outs/" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
+
+# =========== Custom GRN Method ===============
 # python3 Analyze_Inferred_GRN.py \
 #     --inferred_net_filename "inferred_grn.tsv" \
 #     --method_name "CUSTOM_GRN" \
