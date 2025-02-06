@@ -70,7 +70,7 @@ def log_message(message, width=60, fill_char='='):
     return f"\n\n{fill_char * left_pad}{message}{fill_char * right_pad}"
 
 
-def read_input_files(input_directory) -> tuple[str, list, list, dict]:
+def read_input_files(input_directory, batch_name) -> tuple[str, list, list, dict]:
     """
     Reads through the current directory to find input files.
     
@@ -124,8 +124,8 @@ def read_input_files(input_directory) -> tuple[str, list, list, dict]:
                 # If the folder is not "ground_truth", assume the folders are the method names
                 else:
                     # Create output directories for the samples
-                    if not os.path.exists(f'./OUTPUT/{subfolder}'):
-                        os.makedirs(f'./OUTPUT/{subfolder}')
+                    if not os.path.exists(f'./OUTPUT/{batch_name}'):
+                        os.makedirs(f'./OUTPUT/{batch_name}')
                     
                     # Set the method name to the name of the subfolder
                     method_name = subfolder
@@ -149,8 +149,8 @@ def read_input_files(input_directory) -> tuple[str, list, list, dict]:
                             sample_names.add(sample_name)
                             
                             # Create output directories for the samples
-                            if not os.path.exists(f'./OUTPUT/{subfolder}/{sample_name}'):
-                                os.makedirs(f'./OUTPUT/{subfolder}/{sample_name}')
+                            if not os.path.exists(f'./OUTPUT/{batch_name}/{subfolder}'):
+                                os.makedirs(f'./OUTPUT/{batch_name}/{subfolder}')
                             
                             # Add the path to the sample to the inferred network dictionary for the method
                             if sample_name not in inferred_network_dict[method_name]:
@@ -300,11 +300,11 @@ def main():
     input_directory = args.input_directory
     batch_name = args.batch_name
     
-    ground_truth_path, method_names, sample_names, inferred_network_dict = read_input_files(input_directory)
+    ground_truth_path, method_names, sample_names, inferred_network_dict = read_input_files(input_directory, batch_name)
     
     all_method_names = "_vs_".join([method for method in method_names])
-    comparision_output_path = f'./OUTPUT/{batch_name}_{all_method_names}_all_samples'
-    randomized_accuracy_metric_path = f'./OUTPUT/randomized_{batch_name}_{all_method_names}_all_samples'
+    comparision_output_path = f'./OUTPUT/{batch_name}/{all_method_names}_all_samples'
+    randomized_accuracy_metric_path = f'./OUTPUT/{batch_name}/randomized_{all_method_names}_all_samples'
     
     if not os.path.exists(comparision_output_path):
         os.makedirs(comparision_output_path)
@@ -351,7 +351,7 @@ def main():
             # ================== READING IN AND STANDARDIZING INFERRED DATAFRAMES ===============
             inferred_network_file = inferred_network_dict[method][sample]
             sep = ',' if method == 'CELL_ORACLE' or method == 'TRIPOD' else '\t'
-            index_col=False if method == 'CELL_ORACLE' or method == 'TRIPOD' else 0
+            index_col=False if method == 'CELL_ORACLE' or method == 'TRIPOD' or method == 'SCENIC+' else 0
             
             inferred_network_df = load_inferred_network_df(inferred_network_file, sep, index_col)
                         
@@ -437,9 +437,9 @@ def main():
             size_df = pd.DataFrame(network_sizes)
 
             # Define output paths
-            os.makedirs(f"./OUTPUT/{method}/{batch_name}", exist_ok=True)
-            ground_truth_size_path = f"./OUTPUT/{method}/{batch_name}/{method.lower()}_ground_truth_size_{sample.lower()}.tsv"
-            inferred_network_size_path = f"./OUTPUT/{method}/{batch_name}/{method.lower()}_inferred_network_size_{sample.lower()}.tsv"
+            os.makedirs(f"./OUTPUT/{batch_name}/{method}", exist_ok=True)
+            ground_truth_size_path = f"./OUTPUT/{batch_name}/{method}/{method.lower()}_ground_truth_size_{sample.lower()}.tsv"
+            inferred_network_size_path = f"./OUTPUT/{batch_name}/{method}/{method.lower()}_inferred_network_size_{sample.lower()}.tsv"
 
             # Write the sizes to TSV files
             size_df[["Type", "Ground Truth TFs", "Ground Truth TGs", "Ground Truth Edges"]].to_csv(
@@ -469,7 +469,7 @@ def main():
             plotting.plot_multiple_histogram_with_thresholds(
                 histogram_ground_truth_dict,
                 histogram_inferred_network_dict,
-                save_path=f'./OUTPUT/{method}/{batch_name}/histogram_with_threshold'
+                save_path=f'./OUTPUT/{batch_name}/{method}/histogram_with_threshold'
                 )
 
             # Create the randomized inference scores and calculate accuracy metrics
@@ -477,7 +477,7 @@ def main():
             randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
                 sample_ground_truth,
                 inferred_network_df,
-                histogram_save_path=f'./OUTPUT/{method}/{batch_name}/randomized_histogram_with_threshold',
+                histogram_save_path=f'./OUTPUT/{batch_name}/{method}/randomized_histogram_with_threshold',
                 random_method="random_permutation"
                 )
             
@@ -489,14 +489,14 @@ def main():
             
             # Write out the accuracy metrics to a tsv file
             logging.debug(f'\t\tWriting accuracy metrics to a tsv file') 
-            with open(f'./OUTPUT/{method.upper()}/{batch_name}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
+            with open(f'./OUTPUT/{batch_name}/{method.upper()}/accuracy_metrics.tsv', 'w') as accuracy_metric_file:
                 accuracy_metric_file.write(f'Metric\tScore\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     accuracy_metric_file.write(f'{metric_name}\t{score:.4f}\n')
                     total_accuracy_metrics[method][sample][metric_name] = score
                         
             # Write out the randomized accuracy metrics to a tsv file
-            with open(f'./OUTPUT/{method.upper()}/{batch_name}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
+            with open(f'./OUTPUT/{batch_name}/{method.upper()}/randomized_accuracy_method.tsv', 'w') as random_accuracy_file:
                 random_accuracy_file.write(f'Metric\tOriginal Score\tRandomized Score\n')
                 for metric_name, score in accuracy_metric_dict.items():
                     random_accuracy_file.write(f'{metric_name}\t{score:.4f}\t{uniform_accuracy_metric_dict[metric_name]:4f}\n')
@@ -532,8 +532,8 @@ def main():
             }
             
             logging.debug(f'\t\tPlotting the normal and randomized AUROC and AUPRC graphs') 
-            plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{method}/{batch_name}/randomized_auroc_auprc.png')
-            plotting.plot_auroc_auprc(confusion_matrix_with_method, f'./OUTPUT/{method}/{batch_name}/auroc_auprc.png')
+            plotting.plot_auroc_auprc(sample_randomized_method_dict, f'./OUTPUT/{batch_name}/{method}/randomized_auroc_auprc.png')
+            plotting.plot_auroc_auprc(confusion_matrix_with_method, f'./OUTPUT/{batch_name}/{method}/auroc_auprc.png')
 
             logging.debug(f'\t\tUpdating the total accuracy metrics for the current method') 
             # Add the auroc and auprc values to the total accuracy metric dictionaries

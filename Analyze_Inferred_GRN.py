@@ -342,6 +342,7 @@ def main():
     logging.info(f'\tReading ground truth')
     ground_truth = pd.read_csv(GROUND_TRUTH_PATH, sep='\t', quoting=csv.QUOTE_NONE, on_bad_lines='skip', header=0)
     ground_truth = standardize_ground_truth_format(ground_truth)
+    print(ground_truth.head())
     
     # PROCESSING EACH METHOD
     
@@ -369,7 +370,7 @@ def main():
             
         elif METHOD_NAME == "CUSTOM_GRN":
             inferred_network_df = grn_formatting.create_standard_dataframe(
-                inferred_network_df, source_col='Source', target_col='Target', score_col='Weighted_Score'
+                inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
             )
             
         else:
@@ -416,8 +417,8 @@ def main():
             sample_ground_truth, inferred_network_df
         )
         
-        # inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
-        # sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
+        inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
+        sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
         
         inferred_network_df = inferred_network_df.dropna(subset=['Score'])
         sample_ground_truth = sample_ground_truth.dropna(subset=['Score'])
@@ -430,6 +431,8 @@ def main():
         inferred_network_df = grn_formatting.remove_tf_tg_not_in_ground_truth(
             sample_ground_truth, inferred_network_df
         )
+        print(inferred_network_df.head())
+        print(sample_ground_truth.head())
         
 
         sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
@@ -482,7 +485,7 @@ def main():
         plotting.plot_multiple_histogram_with_thresholds(
             histogram_ground_truth_dict,
             histogram_inferred_network_dict,
-            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/histogram_with_threshold'
+            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/histogram_with_threshold'
             )
 
         # Create the randomized inference scores and calculate accuracy metrics
@@ -490,7 +493,7 @@ def main():
         randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
             sample_ground_truth,
             inferred_network_df,
-            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/randomized_histogram_with_threshold',
+            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/randomized_histogram_with_threshold',
             random_method="random_permutation"
             )
         
@@ -541,8 +544,10 @@ def main():
 
         
         sample_randomized_method_dict = {
-            f"{METHOD_NAME} Original": {'y_true':confusion_matrix_score_dict['y_true'], 'y_scores':confusion_matrix_score_dict['y_scores']},
-            f"{METHOD_NAME} Randomized": {'y_true':uniform_confusion_matrix_dict['y_true'], 'y_scores':uniform_confusion_matrix_dict['y_scores']}
+            METHOD_NAME: {'normal_y_true': confusion_matrix_score_dict['y_true'],
+                          'normal_y_scores': confusion_matrix_score_dict['y_scores'],
+                          'randomized_y_true': uniform_confusion_matrix_dict['y_true'],
+                          'randomized_y_scores': uniform_confusion_matrix_dict['y_scores']}
         }
         
         logging.debug(f'\t\tPlotting the normal and randomized AUROC and AUPRC graphs') 
@@ -563,45 +568,50 @@ def main():
             total_accuracy_metrics[METHOD_NAME][sample][key] = int(confusion_matrix_score_dict[key])
             random_accuracy_metrics[METHOD_NAME][sample][key] = int(uniform_confusion_matrix_dict[key])
         
+        plotting.plot_normal_and_randomized_roc_prc(
+                sample_randomized_method_dict,
+                f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png'
+            )
+        
         # Free memory
         del sample_ground_truth, inferred_network_df
         gc.collect()
     
-    logging.info(f'\tPlotting {METHOD_NAME.lower()} original vs randomized AUROC and AUPRC for all samples')
+    # logging.info(f'\tPlotting {METHOD_NAME.lower()} original vs randomized AUROC and AUPRC for all samples')
     
-    if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
-        os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
+    # if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
+    #     os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
         
-    # Convert lists to NumPy arrays and concatenate
-    randomized_method_dict[METHOD_NAME]['normal_y_true'] = np.concatenate((
-        randomized_method_dict[METHOD_NAME]['normal_y_true'],
-        np.array(confusion_matrix_score_dict['y_true'])
-    ))
+    # # Convert lists to NumPy arrays and concatenate
+    # randomized_method_dict[METHOD_NAME]['normal_y_true'] = np.concatenate((
+    #     randomized_method_dict[METHOD_NAME]['normal_y_true'],
+    #     np.array(confusion_matrix_score_dict['y_true'])
+    # ))
 
-    randomized_method_dict[METHOD_NAME]['normal_y_scores'] = np.concatenate((
-        randomized_method_dict[METHOD_NAME]['normal_y_scores'],
-        np.array(confusion_matrix_score_dict['y_scores'])
-    ))
+    # randomized_method_dict[METHOD_NAME]['normal_y_scores'] = np.concatenate((
+    #     randomized_method_dict[METHOD_NAME]['normal_y_scores'],
+    #     np.array(confusion_matrix_score_dict['y_scores'])
+    # ))
 
-    randomized_method_dict[METHOD_NAME]['randomized_y_true'] = np.concatenate((
-        randomized_method_dict[METHOD_NAME]['randomized_y_true'],
-        np.array(uniform_confusion_matrix_dict['y_true'])
-    ))
+    # randomized_method_dict[METHOD_NAME]['randomized_y_true'] = np.concatenate((
+    #     randomized_method_dict[METHOD_NAME]['randomized_y_true'],
+    #     np.array(uniform_confusion_matrix_dict['y_true'])
+    # ))
 
-    randomized_method_dict[METHOD_NAME]['randomized_y_scores'] = np.concatenate((
-        randomized_method_dict[METHOD_NAME]['randomized_y_scores'],
-        np.array(uniform_confusion_matrix_dict['y_scores'])
-    ))
+    # randomized_method_dict[METHOD_NAME]['randomized_y_scores'] = np.concatenate((
+    #     randomized_method_dict[METHOD_NAME]['randomized_y_scores'],
+    #     np.array(uniform_confusion_matrix_dict['y_scores'])
+    # ))
     
-    plotting.plot_normal_and_randomized_roc_prc(
-            randomized_method_dict,
-            f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png'
-        )
+    # plotting.plot_normal_and_randomized_roc_prc(
+    #         randomized_method_dict,
+    #         f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png'
+    #     )
         
-    # plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
+    # # plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
     
-    write_method_accuracy_metric_file(total_accuracy_metrics, BATCH_NAME)
-    write_method_accuracy_metric_file(random_accuracy_metrics, BATCH_NAME)
+    # write_method_accuracy_metric_file(total_accuracy_metrics, BATCH_NAME)
+    # write_method_accuracy_metric_file(random_accuracy_metrics, BATCH_NAME)
                 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')  
