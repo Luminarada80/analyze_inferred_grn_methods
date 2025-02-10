@@ -322,14 +322,25 @@ def main():
     
     # Iterate through the inferred GRN main otuput path
     print("/".join([i for i in METHOD_INPUT_PATH.split("/")[-2:]]))
+    # print(INFERRED_NET_FILENAME)
+    
     for folder in os.listdir(METHOD_INPUT_PATH):
-        
+        # print(folder)
         # In each subfile of the main GRN output path, find any file that matches the inferred net filename for the method
         # for subfile in os.listdir(os.path.join(METHOD_INPUT_PATH, folder)):
+        
         if INFERRED_NET_FILENAME in folder:
-                # logging.info(f'  └──{folder}')
-                # print(f'Found inferred network file for sample {folder}')
-            inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, folder)
+            # logging.info(f'  └──{folder}')
+            print(f'Found inferred network file for sample {folder}')
+            inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, INFERRED_NET_FILENAME)
+            
+        elif os.path.isdir(folder):
+            for subfile in os.listdir(os.path.join(METHOD_INPUT_PATH, folder)):
+                # logging.info(f'  └──{subfile}')
+                if INFERRED_NET_FILENAME in subfile:
+                    inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, f'{folder}/{subfile}')
+    
+    
     
     print(log_message("INFERENCE METHOD ANALYSIS AND COMPARISON"))
     
@@ -354,8 +365,10 @@ def main():
     random_accuracy_metrics[METHOD_NAME] = {}
     
     # PROCESSING EACH SAMPLE
+    sample_list = []
     for sample in inferred_network_dict[METHOD_NAME]:   
         logging.info(f'\tAnalyzing {sample}')
+        sample_list.append(sample)
         
         # ================== READING IN AND STANDARDIZING INFERRED DATAFRAMES ===============
         inferred_network_file = inferred_network_dict[METHOD_NAME][sample]
@@ -374,7 +387,7 @@ def main():
             )
             
         else:
-            print(inferred_network_df.head())
+            # print(inferred_network_df.head())
             inferred_network_df = grn_formatting.create_standard_dataframe(
                 inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
             )
@@ -431,8 +444,8 @@ def main():
         inferred_network_df = grn_formatting.remove_tf_tg_not_in_ground_truth(
             sample_ground_truth, inferred_network_df
         )
-        print(inferred_network_df.head())
-        print(sample_ground_truth.head())
+        # print(inferred_network_df.head())
+        # print(sample_ground_truth.head())
         
 
         sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
@@ -488,18 +501,19 @@ def main():
             save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/histogram_with_threshold'
             )
 
-        # Create the randomized inference scores and calculate accuracy metrics
-        logging.debug(f'\t\tCreating randomized inference scores') 
-        randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
-            sample_ground_truth,
-            inferred_network_df,
-            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/randomized_histogram_with_threshold',
-            random_method="random_permutation"
-            )
+        # # Create the randomized inference scores and calculate accuracy metrics
+        # logging.debug(f'\t\tCreating randomized inference scores') 
+        # randomized_accuracy_metric_dict, randomized_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
+        #     sample_ground_truth,
+        #     inferred_network_df,
+        #     histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/randomized_histogram_with_threshold',
+        #     random_method="random_permutation"
+        #     )
         
         uniform_accuracy_metric_dict, uniform_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
             sample_ground_truth,
             inferred_network_df,
+            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}/randomized_histogram_with_threshold',
             random_method="uniform_distribution"
             )
         
@@ -577,7 +591,7 @@ def main():
         del sample_ground_truth, inferred_network_df
         gc.collect()
     
-    # logging.info(f'\tPlotting {METHOD_NAME.lower()} original vs randomized AUROC and AUPRC for all samples')
+    logging.info(f'\tPlotting {METHOD_NAME.lower()} original vs randomized AUROC and AUPRC for all samples')
     
     # if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
     #     os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
@@ -607,8 +621,9 @@ def main():
     #         randomized_method_dict,
     #         f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png'
     #     )
-        
-    # # plotting.plot_multiple_method_auroc_auprc(randomized_method_dict, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
+    
+    # print(total_method_confusion_scores)
+    plotting.plot_all_samples_auroc_auprc(total_method_confusion_scores, sample_list, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
     
     # write_method_accuracy_metric_file(total_accuracy_metrics, BATCH_NAME)
     # write_method_accuracy_metric_file(random_accuracy_metrics, BATCH_NAME)

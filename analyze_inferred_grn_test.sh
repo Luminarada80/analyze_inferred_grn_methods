@@ -9,12 +9,12 @@
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/miniconda3/lib
 
-# ========= K562 CellOracle vs LINGER vs SCENIC+ ===========
-python3 Compare_Inferred_GRN_Methods.py \
-    --input_directory "K562_INPUT" \
-    --batch_name "K562"
+# # ========= K562 CellOracle vs LINGER vs SCENIC+ ===========
+# python3 Compare_Inferred_GRN_Methods.py \
+#     --input_directory "K562_INPUT" \
+#     --batch_name "K562"
 
-# ====== MACROPHAGE CellOracle vs LINGER ========
+# # ====== MACROPHAGE CellOracle vs LINGER ========
 # python3 Compare_Inferred_GRN_Methods.py \
 #     --input_directory "MACROPHAGE_INPUT" \
 #     --batch_name "macrophage"
@@ -79,34 +79,80 @@ python3 Compare_Inferred_GRN_Methods.py \
 #     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/SCENIC_PLUS/outs/" \
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_K562/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
 
-# =========== Custom GRN Method ===============
+# # =========== Custom GRN Method ===============
+# # ----- Stability -----
 # python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "rf_inferred_grn.tsv" \
+#     --inferred_net_filename "rf_inferred_grn_stability.tsv" \
 #     --method_name "SINGLE_CELL_CUSTOM_GRN" \
-#     --batch_name "mESC_RN114_ChIPX_ESCAPE_sc_rf" \
-#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+#     --batch_name "stability_mESC_RN114_ChIPX_ESCAPE_sc_rf" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/rf_stability_analysis/" \
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
 
+# # ----- Random Forest cell-level GRNs -----
+python3 Analyze_Inferred_GRN.py \
+    --inferred_net_filename "rf_inferred_grn.tsv" \
+    --method_name "SINGLE_CELL_CUSTOM_GRN" \
+    --batch_name "mESC_RN115_LOGOF_ESCAPE_sc_rf" \
+    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
+
+python3 Analyze_Inferred_GRN.py \
+    --inferred_net_filename "rf_inferred_grn.tsv" \
+    --method_name "SINGLE_CELL_CUSTOM_GRN" \
+    --batch_name "mESC_RN114_ChIPX_ESCAPE_sc_rf" \
+    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
+
+python3 Analyze_Inferred_GRN.py \
+    --inferred_net_filename "rf_inferred_grn.tsv" \
+    --method_name "SINGLE_CELL_CUSTOM_GRN" \
+    --batch_name "mESC_RN112_LOGOF_sc_rf" \
+    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+    --ground_truth_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
+
+# # ----- Raw Score single-cell GRNs -----
 # python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "rf_inferred_grn.tsv" \
+#     --inferred_net_filename "cell_level_inferred_grn.tsv" \
 #     --method_name "SINGLE_CELL_CUSTOM_GRN" \
-#     --batch_name "mESC_RN115_LOGOF_ESCAPE_sc_rf" \
+#     --batch_name "mESC_RN111_ChIP" \
 #     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
-#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
 
 # python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "rf_inferred_grn.tsv" \
+#     --inferred_net_filename "cell_level_inferred_grn.tsv" \
 #     --method_name "SINGLE_CELL_CUSTOM_GRN" \
-#     --batch_name "mESC_RN112_LOGOF_sc_rf" \
+#     --batch_name "mESC_RN112_LOGOF" \
 #     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
 #     --ground_truth_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
 
 # python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "inferred_grn.tsv" \
-#     --method_name "CUSTOM_GRN" \
+#     --inferred_net_filename "cell_level_inferred_grn.tsv" \
+#     --method_name "SINGLE_CELL_CUSTOM_GRN" \
+#     --batch_name "mESC_RN114_ChIPX_ESCAPE" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
+
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "cell_level_inferred_grn.tsv" \
+#     --method_name "SINGLE_CELL_CUSTOM_GRN" \
 #     --batch_name "mESC_RN115_LOGOF_ESCAPE" \
 #     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
+
+# # ----- Population-level GRNs -----
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "inferred_grn.tsv" \
+#     --method_name "CUSTOM_GRN" \
+#     --batch_name "mESC_RN111_ChIP" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
+    
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "inferred_grn.tsv" \
+#     --method_name "CUSTOM_GRN" \
+#     --batch_name "mESC_RN112_LOGOF" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
 
 # python3 Analyze_Inferred_GRN.py \
 #     --inferred_net_filename "inferred_grn.tsv" \
@@ -118,24 +164,10 @@ python3 Compare_Inferred_GRN_Methods.py \
 # python3 Analyze_Inferred_GRN.py \
 #     --inferred_net_filename "inferred_grn.tsv" \
 #     --method_name "CUSTOM_GRN" \
-#     --batch_name "mESC_RN112_LOGOF" \
+#     --batch_name "mESC_RN115_LOGOF_ESCAPE" \
 #     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
-#     --ground_truth_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
 
-# python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "inferred_grn.tsv" \
-#     --method_name "CUSTOM_GRN" \
-#     --batch_name "mESC_RN111_ChIP" \
-#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
-#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
-    
-
-# python3 Analyze_Inferred_GRN.py \
-#     --inferred_net_filename "total_motif_regulatory_scores.tsv" \
-#     --method_name "CUSTOM_GRN" \
-#     --batch_name "test_mESC" \
-#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/" \
-#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
 
 # ======= MACROPHAGE CELL LEVEL LINGER GRN ========
 # python3 Analyze_Single_Cell_GRN.py \
