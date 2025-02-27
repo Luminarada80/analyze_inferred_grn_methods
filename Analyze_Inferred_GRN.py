@@ -321,17 +321,17 @@ def main():
     inferred_network_dict = {METHOD_NAME: {}}
     
     # Iterate through the inferred GRN main otuput path
-    print("/".join([i for i in METHOD_INPUT_PATH.split("/")[-2:]]))
+    # print("/".join([i for i in METHOD_INPUT_PATH.split("/")[-2:]]))
     # print(INFERRED_NET_FILENAME)
     
     for folder in os.listdir(METHOD_INPUT_PATH):
         # print(folder)
         # In each subfile of the main GRN output path, find any file that matches the inferred net filename for the method
         # for subfile in os.listdir(os.path.join(METHOD_INPUT_PATH, folder)):
-        
+        # print(INFERRED_NET_FILENAME)
         if INFERRED_NET_FILENAME in folder:
             # logging.info(f'  └──{folder}')
-            print(f'Found inferred network file for sample {folder}')
+            # print(f'Found inferred network file for sample {folder}')
             inferred_network_dict[METHOD_NAME][folder] = os.path.join(METHOD_INPUT_PATH, INFERRED_NET_FILENAME)
             
         elif os.path.isdir(folder):
@@ -430,9 +430,15 @@ def main():
             sample_ground_truth, inferred_network_df
         )
         
+        # Drop scores with a value of 0 values
+        inferred_network_df = inferred_network_df.loc[inferred_network_df["Score"] != 0]
+        sample_ground_truth = sample_ground_truth.loc[sample_ground_truth["Score"] != 0]
+        
+        # Take the log2 of Score
         inferred_network_df["Score"] = np.log2(inferred_network_df["Score"])
         sample_ground_truth["Score"] = np.log2(sample_ground_truth["Score"])
         
+        # Drop any NaN values
         inferred_network_df = inferred_network_df.dropna(subset=['Score'])
         sample_ground_truth = sample_ground_truth.dropna(subset=['Score'])
         
@@ -444,8 +450,8 @@ def main():
         inferred_network_df = grn_formatting.remove_tf_tg_not_in_ground_truth(
             sample_ground_truth, inferred_network_df
         )
-        # print(inferred_network_df.head())
-        # print(sample_ground_truth.head())
+        print(inferred_network_df.head())
+        print(sample_ground_truth.head())
         
 
         sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
@@ -593,8 +599,8 @@ def main():
     
     logging.info(f'\tPlotting {METHOD_NAME.lower()} original vs randomized AUROC and AUPRC for all samples')
     
-    # if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
-    #     os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
+    if not os.path.exists(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/'):
+        os.makedirs(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/')
         
     # # Convert lists to NumPy arrays and concatenate
     # randomized_method_dict[METHOD_NAME]['normal_y_true'] = np.concatenate((
