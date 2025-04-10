@@ -10,3 +10,4 @@ TRIPOD_INPUT/
 *.err
 *.log
 testing.py
+LOGS/

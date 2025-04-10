@@ -403,8 +403,8 @@ def main():
                 sample_ground_truth, inferred_network_df
             )
             
-            inferred_network_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            sample_ground_truth.replace([np.inf, -np.inf], np.nan, inplace=True)
+            inferred_network_df.replace([np.inf, -np.inf, 0], np.nan, inplace=True)
+            sample_ground_truth.replace([np.inf, -np.inf, 0], np.nan, inplace=True)
             
             inferred_network_df["Score"] = np.log2(np.abs(inferred_network_df["Score"]))
             sample_ground_truth["Score"] = np.log2(np.abs(sample_ground_truth["Score"]))

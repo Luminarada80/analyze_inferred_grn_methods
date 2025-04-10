@@ -17,7 +17,14 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/miniconda3/lib
 # # ====== MACROPHAGE CellOracle vs LINGER ========
 # python3 Compare_Inferred_GRN_Methods.py \
 #     --input_directory "MACROPHAGE_INPUT" \
-#     --batch_name "macrophage"
+#     --batch_name "macrophage_all_methods"
+
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "scenic_plus_inferred_grn_macrophage_macrophage_buffer3_filtered.tsv" \
+#     --method_name "SCENIC+" \
+#     --batch_name "macrophage_buffer3" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/STATISTICAL_ANALYSIS/MACROPHAGE_INPUT_BUFFER_3/SCENIC+/macrophage_buffer3/" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/STATISTICAL_ANALYSIS/MACROPHAGE_INPUT_BUFFER_3/GROUND_TRUTH/RN204_macrophage_ground_truth.tsv"
 
 # ====== mESC TRIPOD ========
 # python3 Compare_Inferred_GRN_Methods.py \
@@ -198,12 +205,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/miniconda3/lib
 #     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
 
 # ----- TF to TG Scores Only -----
-python3 Analyze_Inferred_GRN.py \
-    --inferred_net_filename "inferred_network.tsv" \
-    --method_name "CUSTOM_GRN" \
-    --batch_name "mESC_RN111_ChIP" \
-    --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/mESC_full_test" \
-    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
+# python3 Analyze_Inferred_GRN.py \
+#     --inferred_net_filename "inferred_network.tsv" \
+#     --method_name "CUSTOM_GRN" \
+#     --batch_name "mESC_RN111_ChIP" \
+#     --method_input_path "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/mESC_full_test" \
+#     --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/RN111.tsv"
 
 # ======= MACROPHAGE CELL LEVEL LINGER GRN ========
 # python3 Analyze_Single_Cell_GRN.py \
