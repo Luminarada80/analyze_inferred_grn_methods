@@ -199,15 +199,17 @@ def main():
     # PROCESSING EACH SAMPLE
     sample_list = []
     for i, sample in enumerate(inferred_network_dict[METHOD_NAME]):   
-        logging.info(f'\tAnalyzing {sample} ({i}/{len(inferred_network_dict[METHOD_NAME])})')
+        logging.info(f'\tAnalyzing {sample}')
         sample_list.append(sample)
         
         # ================== READING IN AND STANDARDIZING INFERRED DATAFRAMES ===============
         inferred_network_file = inferred_network_dict[METHOD_NAME][sample]
 
         sep = ',' if METHOD_NAME == 'CELL_ORACLE' else '\t'
+        logging.info("\t\tLoading the inferred network")
         inferred_network_df = load_inferred_network_df(inferred_network_file, sep)
         
+        logging.info('\t\tStandardizing the DataFrame to "Source", "Target", "Score" columns')
         if METHOD_NAME == "CELL_ORACLE":
             inferred_network_df = grn_formatting.create_standard_dataframe(
                 inferred_network_df, source_col='source', target_col='target', score_col='coef_abs'

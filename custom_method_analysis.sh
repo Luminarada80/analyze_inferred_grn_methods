@@ -15,7 +15,7 @@ METHOD_NAME="CUSTOM_GRN"
 echo "python3 $PROJECT_DIR/Analyze_Inferred_GRN.py "
 echo "    --inferred_net_filename ${INFERRED_NET_FILE} "
 echo "    --method_name $METHOD_NAME "
-echo "    --batch_name ${CELL_TYPE}/${SAMPLE_NAME}/${GROUND_TRUTH_NAME}/${INFERRED_NET_NAME} "
+echo "    --batch_name ${CELL_TYPE}_vs_${TARGET_NAME}/${SAMPLE_NAME}/${GROUND_TRUTH_NAME}/${INFERRED_NET_NAME}/${FEATURE_SET} "
 echo "    --method_input_path $INFERRED_NET_DIR "
 echo "    --ground_truth_path $GROUND_TRUTH_FILE"
 
@@ -23,7 +23,7 @@ echo "    --ground_truth_path $GROUND_TRUTH_FILE"
 python3 "$PROJECT_DIR/Analyze_Inferred_GRN.py" \
     --inferred_net_filename "$INFERRED_NET_FILE" \
     --method_name "$METHOD_NAME" \
-    --batch_name "${CELL_TYPE}/${SAMPLE_NAME}/${GROUND_TRUTH_NAME}/${INFERRED_NET_NAME}" \
+    --batch_name "${CELL_TYPE}_vs_${TARGET_NAME}/${SAMPLE_NAME}/${GROUND_TRUTH_NAME}/${INFERRED_NET_NAME}/${FEATURE_SET}" \
     --method_input_path "$INFERRED_NET_DIR" \
     --ground_truth_path "$GROUND_TRUTH_FILE"
 
