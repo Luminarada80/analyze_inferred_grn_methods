@@ -19,6 +19,11 @@ K562_RN117_CHIPSEQ="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSIT
 K562_RN118_KNOCKTF="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN118_KO_KnockTF_Human_K562.tsv"
 K562_RN119_CHIP_AND_KO="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN119_ChIPSeqandKO_PMID37486787andKnockTF_Human_K562.tsv"
 
+MESC_RN111_CHIPSEQ="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN111_ChIPSeq_BEELINE_Mouse_ESC.tsv"
+MESC_RN112_LOGOF="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
+MESC_RN114_CHIPX_ESCAPE="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
+MESC_RN115_LOGOF_ESCAPE="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
+
 
 submit_job() {
     local INFERRED_NET_FILE=$1
@@ -97,17 +102,16 @@ run_macrophage() {
     # (i.e. for file "macrophage_vs_K562_inferred_network_raw_xgb_pred.tsv" enter "K562")
     local TARGET_NAME=( \
         "macrophage" \
-        # "K562"
+        # "K562" \
+        # "mESC"
     )
 
     # Select the name of the feature sets to analyze
     local FEATURE_SETS=( \
         # "inferred_network_raw" \
-        # "inferred_network_w_string"
-        # "inferred_network_method_combos_summed" \
-        # "inferred_network_method_combos_raw" \
+        "inferred_network_w_string" \
         # "inferred_network_string_scores_only" \
-        "inferred_network_w_string_no_tf"
+        # "inferred_network_w_string_no_tf"
     )
 
     # Select the ground truth based on the cell type of the TARGET_NAME
@@ -115,7 +119,11 @@ run_macrophage() {
         "${MACROPHAGE_GROUND_TRUTH}" \
         # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
-        # "${K562_RN119_CHIP_AND_KO}"
+        # "${K562_RN119_CHIP_AND_KO}" \
+        # "${MESC_RN111_CHIPSEQ}" \
+        # "${MESC_RN112_LOGOF}" \
+        # "${MESC_RN114_CHIPX_ESCAPE}" \
+        # "${MESC_RN115_LOGOF_ESCAPE}"
     )
 
     # Select the name of the ground truths uncommented above
@@ -124,6 +132,10 @@ run_macrophage() {
         # "RN117_ChIPSeq" \
         # "RN118_KO_KNOCK_TF" \
         # "RN119_CHIP_AND_KO" \
+        # "MESC_RN111_CHIPSEQ" \
+        # "MESC_RN112_LOGOF" \
+        # "MESC_RN114_CHIPX_ESCAPE" \
+        # "MESC_RN115_LOGOF_ESCAPE"
     )
 
     # Run for each selected sample
@@ -194,7 +206,7 @@ run_mESC(){
         # "70_percent_subsampled_9"
         # "70_percent_subsampled_10"
         "filtered_L2_E7.5_rep1"
-        "filtered_L2_E7.5_rep2"
+        # "filtered_L2_E7.5_rep2"
         # "filtered_L2_E7.75_rep1"
         # "filtered_L2_E8.0_rep1"
         # "filtered_L2_E8.0_rep2"
@@ -205,26 +217,41 @@ run_mESC(){
         # "filtered_L2_E8.75_rep1"
         # "filtered_L2_E8.75_rep2"
     )
+
+    # Specify the target name for the model prediction 
+    # (i.e. for file "macrophage_vs_K562_inferred_network_raw_xgb_pred.tsv" enter "K562")
+    local TARGET_NAME=( \
+        # "macrophage" \
+        # "K562" \
+        "mESC"
+    )
+
     local FEATURE_SETS=( \
-        "inferred_network_raw" \
-        "inferred_network_w_string"
-        "inferred_network_method_combos_summed" \
-        "inferred_network_method_combos_raw" \
-        "inferred_network_string_scores_only"
+        # "inferred_network_raw" \
+        "inferred_network_w_string" \
+        # "inferred_network_string_scores_only"
     )
 
     local GROUND_TRUTHS=( \
-        "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN111_ChIPSeq_BEELINE_Mouse_ESC.tsv"
-        "/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
-        "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
-        "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
+        # "${MACROPHAGE_GROUND_TRUTH}" \
+        # "${K562_RN117_CHIPSEQ}" \
+        # "${K562_RN118_KNOCKTF}" \
+        # "${K562_RN119_CHIP_AND_KO}" \
+        "${MESC_RN111_CHIPSEQ}" \
+        # "${MESC_RN112_LOGOF}" \
+        # "${MESC_RN114_CHIPX_ESCAPE}" \
+        # "${MESC_RN115_LOGOF_ESCAPE}"
     )
 
     local GROUND_TRUTH_NAMES=( \
-        "RN111_ChIPSeq_BEELINE" \
-        "RN112_LOGOF" \
-        "RN114_CHIPX_ESCAPE" \
-        "RN115_LOGOF_ESCAPE" \
+        # "RN111_ChIPSeq_BEELINE" \
+        # "RN112_LOGOF" \
+        # "RN114_CHIPX_ESCAPE" \
+        # "RN115_LOGOF_ESCAPE" \
+        "MESC_RN111_CHIPSEQ" \
+        # "MESC_RN112_LOGOF" \
+        # "MESC_RN114_CHIPX_ESCAPE" \
+        # "MESC_RN115_LOGOF_ESCAPE"
     )
 
     # Run for each selected sample
@@ -269,16 +296,15 @@ run_K562(){
     local TARGET_NAME=( \
         # "macrophage" \
         "K562" \
+        # "mESC"
     )
 
     # Select the name of the feature sets to analyze
     local FEATURE_SETS=( \
         # "inferred_network_raw" \
-        # "inferred_network_w_string"
-        # "inferred_network_method_combos_summed" \
-        # "inferred_network_method_combos_raw" \
+        "inferred_network_w_string"
         # "inferred_network_string_scores_only" \
-        "inferred_network_w_string_no_tf"
+        # "inferred_network_w_string_no_tf"
     )
 
     # Select the ground truth based on the cell type of the TARGET_NAME
@@ -286,7 +312,11 @@ run_K562(){
         # "${MACROPHAGE_GROUND_TRUTH}" \
         "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
-        # "${K562_RN119_CHIP_AND_KO}"
+        # "${K562_RN119_CHIP_AND_KO}" \
+        # "${MESC_RN111_CHIPSEQ}" \
+        # "${MESC_RN112_LOGOF}" \
+        # "${MESC_RN114_CHIPX_ESCAPE}" \
+        # "${MESC_RN115_LOGOF_ESCAPE}"
 
     )
 
@@ -296,6 +326,10 @@ run_K562(){
         "RN117_ChIPSeq" \
         # "RN118_KO_KNOCK_TF" \
         # "RN119_CHIP_AND_KO" \
+        # "MESC_RN111_CHIPSEQ" \
+        # "MESC_RN112_LOGOF" \
+        # "MESC_RN114_CHIPX_ESCAPE" \
+        # "MESC_RN115_LOGOF_ESCAPE"
     )
 
     # Run for each sample of the cell type
