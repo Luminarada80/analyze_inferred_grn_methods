@@ -103,10 +103,11 @@ run_macrophage() {
     # Select the name of the feature sets to analyze
     local FEATURE_SETS=( \
         # "inferred_network_raw" \
-        "inferred_network_w_string"
+        # "inferred_network_w_string"
         # "inferred_network_method_combos_summed" \
         # "inferred_network_method_combos_raw" \
-        # "inferred_network_string_scores_only"
+        # "inferred_network_string_scores_only" \
+        "inferred_network_w_string_no_tf"
     )
 
     # Select the ground truth based on the cell type of the TARGET_NAME
@@ -272,28 +273,29 @@ run_K562(){
 
     # Select the name of the feature sets to analyze
     local FEATURE_SETS=( \
-        "inferred_network_raw" \
-        "inferred_network_w_string"
+        # "inferred_network_raw" \
+        # "inferred_network_w_string"
         # "inferred_network_method_combos_summed" \
         # "inferred_network_method_combos_raw" \
-        # "inferred_network_string_scores_only"
+        # "inferred_network_string_scores_only" \
+        "inferred_network_w_string_no_tf"
     )
 
     # Select the ground truth based on the cell type of the TARGET_NAME
     local GROUND_TRUTHS=( \
         # "${MACROPHAGE_GROUND_TRUTH}" \
-        # "${K562_RN117_CHIPSEQ}" \
-        "${K562_RN118_KNOCKTF}" \
-        "${K562_RN119_CHIP_AND_KO}"
+        "${K562_RN117_CHIPSEQ}" \
+        # "${K562_RN118_KNOCKTF}" \
+        # "${K562_RN119_CHIP_AND_KO}"
 
     )
 
     # Select the name of the ground truths uncommented above
     local GROUND_TRUTH_NAMES=( \
         # "RN204_ChIPSeq" \
-        # "RN117_ChIPSeq" \
-        "RN118_KO_KNOCK_TF" \
-        "RN119_CHIP_AND_KO" \
+        "RN117_ChIPSeq" \
+        # "RN118_KO_KNOCK_TF" \
+        # "RN119_CHIP_AND_KO" \
     )
 
     # Run for each sample of the cell type
@@ -329,4 +331,4 @@ run_K562(){
 
 # run_mESC
 run_K562
-run_macrophage
+# run_macrophage

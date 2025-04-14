@@ -258,7 +258,9 @@ def main():
         
 
         sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
-            sample_ground_truth, inferred_network_df
+            sample_ground_truth,
+            inferred_network_df,
+            lower_threshold=0.5
         )
 
         # # Define output paths
@@ -276,6 +278,13 @@ def main():
             sample_ground_truth,
             inferred_network_df
             )
+
+        logging.info(f'\t\tPlotting TF, TN, FP, FN score boxplots')
+        plotting.plot_classification_score_boxplots(
+            inferred_network_df,
+            sample_ground_truth,
+            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/boxplot_scores_by_threshold.png'
+            )
         
         logging.info(f'\t\tPlotting histogram with thresholds') 
         # Plot the threshold histograms of TP, FP, FN, TN
@@ -284,12 +293,14 @@ def main():
         plotting.plot_multiple_histogram_with_thresholds(
             histogram_ground_truth_dict,
             histogram_inferred_network_dict,
-            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/histogram_with_threshold'
+            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/histogram_with_threshold',
+            lower_threshold=0.5
             )
 
         uniform_accuracy_metric_dict, uniform_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
             sample_ground_truth,
             inferred_network_df,
+            lower_threshold=0.5,
             histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/randomized_histogram_with_threshold',
             random_method="uniform_distribution"
             )
