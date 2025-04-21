@@ -11,6 +11,8 @@ PROJECT_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/STAT
 OUTPUT_FOLDER="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output"
 METHOD_NAME="CUSTOM_GRN"
 
+conda activate grn_analysis
+
 # Run the Python script with the selected parameters.
 echo "python3 $PROJECT_DIR/Analyze_Inferred_GRN.py "
 echo "    --inferred_net_filename ${INFERRED_NET_FILE} "

@@ -142,6 +142,37 @@ def parse_args():
 
     return args   
 
+def balance_true_negative_scores(y_true, y_scores):
+    # Balance positive and negative samples for AUROC only
+    y_true = np.array(y_true)
+    y_scores = np.array(y_scores)
+
+    pos_indices = np.where(y_true == 1)[0]
+    neg_indices = np.where(y_true == 0)[0]
+
+    # Subsample negative class to match number of positives
+    if len(pos_indices) > 0 and len(neg_indices) > 0:
+        if len(pos_indices) < len(neg_indices):
+            rng = np.random.default_rng(seed=42)
+            sampled_neg_indices = rng.choice(neg_indices, size=len(pos_indices), replace=False)
+            balanced_indices = np.concatenate([pos_indices, sampled_neg_indices])
+            balanced_indices.sort()
+            
+            logging.info(f'\tNumber of positive samples for AUROC: {len(pos_indices)}')
+            logging.info(f'\tNumber of negative samples for AUROC: {len(sampled_neg_indices)}')
+
+            # For AUROC only
+            y_true_balanced = y_true[balanced_indices]
+            y_scores_balanced = y_scores[balanced_indices]
+        else:
+            y_true_balanced = y_true
+            y_scores_balanced = y_scores
+    else:
+        y_true_balanced = y_true
+        y_scores_balanced = y_scores
+    
+    return y_true_balanced, y_scores_balanced
+
 def main():
     # print_banner()
     
@@ -192,7 +223,19 @@ def main():
     # PROCESSING EACH METHOD
     logging.info(f'\nProcessing samples for {METHOD_NAME}')
     total_method_confusion_scores[METHOD_NAME] = {'y_true':[], 'y_scores':[]}
-    randomized_method_dict = {METHOD_NAME: {'normal_y_true':[], 'normal_y_scores':[], 'randomized_y_true':[], 'randomized_y_scores':[]}}
+    randomized_method_dict = {
+        METHOD_NAME: {
+            'normal_y_true':[], 
+            'normal_y_scores':[], 
+            'randomized_y_true':[], 
+            'randomized_y_scores':[],
+            'balanced_normal_y_true':[], 
+            'balanced_normal_y_scores':[], 
+            'balanced_randomized_y_true':[], 
+            'balanced_randomized_y_scores':[],
+
+        }
+    }
     total_accuracy_metrics[METHOD_NAME] = {}
     random_accuracy_metrics[METHOD_NAME] = {}
     
@@ -257,11 +300,29 @@ def main():
         )
         
 
+        
+
         sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
             sample_ground_truth,
             inferred_network_df,
             lower_threshold=0.5
         )
+        
+        logging.info("\t\tBalancing the number of ground truth (True) vs non-ground truth (False) edges")
+        logging.info("\t\t\tUnbalanced:")
+        logging.info(f'\t\t\t\tNum True edges (unbalanced): {len(sample_ground_truth)}')
+        logging.info(f'\t\t\t\tNum False edges (unbalanced): {len(inferred_network_df)}')
+        
+        # Subsample to have the same number of ground truth and non-ground truth edges
+        if len(sample_ground_truth) > len(inferred_network_df):
+            balanced_ground_truth = sample_ground_truth.sample(n=len(inferred_network_df))
+            balanced_inferred_network = inferred_network_df.copy()
+        else:
+            balanced_ground_truth = sample_ground_truth.copy()
+            balanced_inferred_network = inferred_network_df.sample(n=len(sample_ground_truth))
+        logging.info("\t\t\tBalanced:")
+        logging.info(f'\t\t\t\tNum True edges (balanced): {len(balanced_ground_truth)}')
+        logging.info(f'\t\t\t\tNum False edges (balanced): {len(balanced_inferred_network)}')
 
         # # Define output paths
         os.makedirs(f"./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/", exist_ok=True)
@@ -278,7 +339,16 @@ def main():
             sample_ground_truth,
             inferred_network_df
             )
+        
+        balanced_accuracy_metric_dict, balanced_confusion_matrix_score_dict = grn_stats.calculate_accuracy_metrics(
+            balanced_ground_truth,
+            balanced_inferred_network
+        )
+        
+        balanced_ground_truth.to_csv(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/balanced_ground_truth.csv')
+        balanced_inferred_network.to_csv(f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/balanced_inferred_network.csv')
 
+        
         logging.info(f'\t\tPlotting TF, TN, FP, FN score boxplots')
         plotting.plot_classification_score_boxplots(
             inferred_network_df,
@@ -288,8 +358,8 @@ def main():
         
         logging.info(f'\t\tPlotting histogram with thresholds') 
         # Plot the threshold histograms of TP, FP, FN, TN
-        histogram_ground_truth_dict = {METHOD_NAME: sample_ground_truth}
-        histogram_inferred_network_dict = {METHOD_NAME: inferred_network_df}
+        histogram_ground_truth_dict = {METHOD_NAME: balanced_ground_truth}
+        histogram_inferred_network_dict = {METHOD_NAME: balanced_inferred_network}
         plotting.plot_multiple_histogram_with_thresholds(
             histogram_ground_truth_dict,
             histogram_inferred_network_dict,
@@ -301,13 +371,19 @@ def main():
             sample_ground_truth,
             inferred_network_df,
             lower_threshold=0.5,
-            histogram_save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/randomized_histogram_with_threshold',
             random_method="uniform_distribution"
             )
         
-        # Record the y_true and y_scores for the current sample to plot all sample AUROC and AUPRC between methods
-        total_method_confusion_scores[METHOD_NAME]['y_true'].append(confusion_matrix_score_dict['y_true'])
-        total_method_confusion_scores[METHOD_NAME]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
+        balanced_uniform_accuracy_metric_dict, balanced_uniform_confusion_matrix_dict = grn_stats.create_randomized_inference_scores(
+            balanced_ground_truth,
+            balanced_inferred_network,
+            lower_threshold=0.5,
+            random_method="uniform_distribution"
+        )
+        
+        # # Record the y_true and y_scores for the current sample to plot all sample AUROC and AUPRC between methods
+        # total_method_confusion_scores[METHOD_NAME]['y_true'].append(confusion_matrix_score_dict['y_true'])
+        # total_method_confusion_scores[METHOD_NAME]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
         
         # Extend the list with values to avoid nesting
         randomized_method_dict[METHOD_NAME]['normal_y_true'].extend(confusion_matrix_score_dict['y_true'])
@@ -315,14 +391,27 @@ def main():
 
         randomized_method_dict[METHOD_NAME]['randomized_y_true'].extend(uniform_confusion_matrix_dict['y_true'])
         randomized_method_dict[METHOD_NAME]['randomized_y_scores'].extend(uniform_confusion_matrix_dict['y_scores'])
+        
+        randomized_method_dict[METHOD_NAME]['balanced_normal_y_true'].extend(balanced_confusion_matrix_score_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['balanced_normal_y_scores'].extend(balanced_confusion_matrix_score_dict['y_scores'])
+
+        randomized_method_dict[METHOD_NAME]['balanced_randomized_y_true'].extend(balanced_uniform_confusion_matrix_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['balanced_randomized_y_scores'].extend(balanced_uniform_confusion_matrix_dict['y_scores'])
 
         
         sample_randomized_method_dict = {
-            METHOD_NAME: {'normal_y_true': confusion_matrix_score_dict['y_true'],
-                          'normal_y_scores': confusion_matrix_score_dict['y_scores'],
-                          'randomized_y_true': uniform_confusion_matrix_dict['y_true'],
-                          'randomized_y_scores': uniform_confusion_matrix_dict['y_scores']}
-        }
+            METHOD_NAME: {
+                'normal_y_true': confusion_matrix_score_dict['y_true'],
+                'normal_y_scores': confusion_matrix_score_dict['y_scores'],
+                'balanced_normal_y_true': balanced_confusion_matrix_score_dict['y_true'],
+                'balanced_normal_y_scores': balanced_confusion_matrix_score_dict['y_scores'],
+                'randomized_y_true': uniform_confusion_matrix_dict['y_true'],
+                'randomized_y_scores': uniform_confusion_matrix_dict['y_scores'],
+                'balanced_randomized_y_true': balanced_uniform_confusion_matrix_dict['y_true'],
+                'balanced_randomized_y_scores': balanced_uniform_confusion_matrix_dict['y_scores']
+                }
+            }
+
         
         logging.info('\t\tPlotting AUROC and AUPRC')
         plotting.plot_normal_and_randomized_roc_prc(

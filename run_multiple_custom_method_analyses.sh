@@ -12,17 +12,18 @@
 # 2) Sample name
 # 3) Ground truth name
 # 3) Inferred network name
+REF_NET_DIR="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS"
 
-MACROPHAGE_GROUND_TRUTH="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN204_ChIPSeq_ChIPAtlas_Human_Macrophages.tsv"
+MACROPHAGE_RN204_CHIPSEQ="$REF_NET_DIR/RN204_ChIPSeq_ChIPAtlas_Human_Macrophages.tsv"
 
-K562_RN117_CHIPSEQ="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
-K562_RN118_KNOCKTF="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN118_KO_KnockTF_Human_K562.tsv"
-K562_RN119_CHIP_AND_KO="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN119_ChIPSeqandKO_PMID37486787andKnockTF_Human_K562.tsv"
+K562_RN117_CHIPSEQ="$REF_NET_DIR/RN117_ChIPSeq_PMID37486787_Human_K562.tsv"
+K562_RN118_KNOCKTF="$REF_NET_DIR/RN118_KO_KnockTF_Human_K562.tsv"
+K562_RN119_CHIP_AND_KO="$REF_NET_DIR/RN119_ChIPSeqandKO_PMID37486787andKnockTF_Human_K562.tsv"
 
-MESC_RN111_CHIPSEQ="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN111_ChIPSeq_BEELINE_Mouse_ESC.tsv"
-MESC_RN112_LOGOF="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/reference_networks/RN112_mouse_logof_ESC_path.tsv"
-MESC_RN114_CHIPX_ESCAPE="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
-MESC_RN115_LOGOF_ESCAPE="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
+MESC_RN111_CHIPSEQ="$REF_NET_DIR/RN111_ChIPSeq_BEELINE_Mouse_ESC.tsv"
+MESC_RN112_LOGOF="$REF_NET_DIR/RN112_LOGOF_BEELINE_Mouse_ESC.tsv"
+MESC_RN114_CHIPX_ESCAPE="$REF_NET_DIR/RN114_ChIPX_ESCAPE_Mouse_ESC.tsv"
+MESC_RN115_LOGOF_ESCAPE="$REF_NET_DIR/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
 
 
 submit_job() {
@@ -116,7 +117,7 @@ run_macrophage() {
 
     # Select the ground truth based on the cell type of the TARGET_NAME
     local GROUND_TRUTHS=( \
-        "${MACROPHAGE_GROUND_TRUTH}" \
+        "${MACROPHAGE_RN204_CHIPSEQ}" \
         # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
         # "${K562_RN119_CHIP_AND_KO}" \
@@ -233,46 +234,48 @@ run_mESC(){
     )
 
     local GROUND_TRUTHS=( \
-        # "${MACROPHAGE_GROUND_TRUTH}" \
+        # "${MACROPHAGE_RN204_CHIPSEQ}" \
         # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
         # "${K562_RN119_CHIP_AND_KO}" \
         "${MESC_RN111_CHIPSEQ}" \
-        # "${MESC_RN112_LOGOF}" \
+        "${MESC_RN112_LOGOF}" \
         # "${MESC_RN114_CHIPX_ESCAPE}" \
         # "${MESC_RN115_LOGOF_ESCAPE}"
     )
 
     local GROUND_TRUTH_NAMES=( \
-        # "RN111_ChIPSeq_BEELINE" \
-        # "RN112_LOGOF" \
-        # "RN114_CHIPX_ESCAPE" \
-        # "RN115_LOGOF_ESCAPE" \
+        # "RN204_ChIPSeq" \
+        # "RN117_ChIPSeq" \
+        # "RN118_KO_KNOCK_TF" \
+        # "RN119_CHIP_AND_KO" \
         "MESC_RN111_CHIPSEQ" \
-        # "MESC_RN112_LOGOF" \
+        "MESC_RN112_LOGOF" \
         # "MESC_RN114_CHIPX_ESCAPE" \
         # "MESC_RN115_LOGOF_ESCAPE"
     )
 
-    # Run for each selected sample
+    # Run for each sample of the cell type
     for SAMPLE_NAME in "${SAMPLE_NAMES[@]}"; do
 
-        local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/"
+        # Specify the location fo the model predictions for the current sample
+        local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
 
-        # Run for each kind of inferred network for the current sample
+        # Run for each feature set
         for FEATURE_SET in "${FEATURE_SETS[@]}"; do
 
-            # Compare the inferred network against each ground truth file for the cell type
+            # Compare the model predictions for the cell type against each ground truth file for the target
             for i in "${!GROUND_TRUTHS[@]}"; do
                 local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
                 local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
-                local INFERRED_NET_FILE="${FEATURE_SET}_xgb_inferred_grn.tsv"
-
+                
+                local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
 
                 # Submit the job for each sample
                 submit_job \
                     "$INFERRED_NET_FILE" \
                     "$CELL_TYPE" \
+                    "$TARGET_NAME" \
                     "$SAMPLE_NAME" \
                     "$GROUND_TRUTH_NAME" \
                     "$FEATURE_SET" \
@@ -309,10 +312,10 @@ run_K562(){
 
     # Select the ground truth based on the cell type of the TARGET_NAME
     local GROUND_TRUTHS=( \
-        # "${MACROPHAGE_GROUND_TRUTH}" \
-        "${K562_RN117_CHIPSEQ}" \
+        # "${MACROPHAGE_RN204_CHIPSEQ}" \
+        # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
-        # "${K562_RN119_CHIP_AND_KO}" \
+        "${K562_RN119_CHIP_AND_KO}" \
         # "${MESC_RN111_CHIPSEQ}" \
         # "${MESC_RN112_LOGOF}" \
         # "${MESC_RN114_CHIPX_ESCAPE}" \
@@ -323,9 +326,9 @@ run_K562(){
     # Select the name of the ground truths uncommented above
     local GROUND_TRUTH_NAMES=( \
         # "RN204_ChIPSeq" \
-        "RN117_ChIPSeq" \
+        # "RN117_ChIPSeq" \
         # "RN118_KO_KNOCK_TF" \
-        # "RN119_CHIP_AND_KO" \
+        "RN119_CHIP_AND_KO" \
         # "MESC_RN111_CHIPSEQ" \
         # "MESC_RN112_LOGOF" \
         # "MESC_RN114_CHIPX_ESCAPE" \
@@ -363,6 +366,6 @@ run_K562(){
     done
 }
 
-# run_mESC
-run_K562
+run_mESC
+# run_K562
 # run_macrophage

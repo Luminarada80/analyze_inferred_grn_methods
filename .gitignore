@@ -11,3 +11,6 @@ TRIPOD_INPUT/
 *.log
 testing.py
 LOGS/
+*.tsv
+*.txt
+*.csv
