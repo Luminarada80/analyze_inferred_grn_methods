@@ -3,11 +3,35 @@
 #SBATCH -p compute
 #SBATCH --nodes=1
 #SBATCH -c 32
-#SBATCH --mem-per-cpu=16G
+#SBATCH --mem=128G
 #SBATCH --output=analyze_inferred_grn.log
 #SBATCH --error=analyze_inferred_grn.err
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/miniconda3/lib
+
+REF_NET_DIR="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS"
+
+MACROPHAGE_RN204_CHIPSEQ="$REF_NET_DIR/RN204_ChIPSeq_ChIPAtlas_Human_Macrophages.tsv"
+MESC_RN111_ChIPSeq_BEELINE="/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN111_ChIPSeq_BEELINE_Mouse_ESC.tsv"
+
+PROJECT_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/STATISTICAL_ANALYSIS"
+
+# ========= LINGER CELL-LEVEL GRNS ===========
+# Macrophage Buffer 1
+python3 "$PROJECT_DIR/analyze_multiple_cell_level_grns.py" \
+    --inferred_net_filename "cell_specific_trans_regulatory.txt" \
+    --method_name "LINGER" \
+    --batch_name "macrophage_cell_level_grns" \
+    --method_input_path "/gpfs/Labs/Uzun/RESULTS/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/MACROPHAGE_RESULTS/LINGER_TRAINED_MODELS/Macrophase_buffer1_filtered/CELL_SPECIFIC_GRNS" \
+    --ground_truth_path "$MACROPHAGE_RN204_CHIPSEQ"
+
+# mESC filtered_L2_E7.5_rep1
+# python3 "$PROJECT_DIR/Analyze_Inferred_GRN.py" \
+#     --inferred_net_filename "cell_specific_trans_regulatory.txt" \
+#     --method_name "LINGER" \
+#     --batch_name "mESC_cell_level_grns" \
+#     --method_input_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.GRN_BENCHMARKING.MOELLER/LINGER/LINGER_MESC_SC_DATA/filtered_L2_E7.5_rep1/CELL_SPECIFIC_GRNS" \
+#     --ground_truth_path "$MESC_RN111_ChIPSeq_BEELINE"
 
 # # ========= K562 CellOracle vs LINGER vs SCENIC+ ===========
 # python3 Compare_Inferred_GRN_Methods.py \

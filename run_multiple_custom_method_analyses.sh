@@ -52,118 +52,83 @@ submit_job() {
 run_macrophage() {
     local CELL_TYPE="macrophage"
 
-    local SAMPLE_NAMES=(
+    local SAMPLE_NAME=(
         "macrophage_buffer1_filtered"
         # "macrophage_buffer2_filtered"
         # "macrophage_buffer3_filtered"
         # "macrophage_buffer4_filtered"
-        # "macrophage_buffer1_stability1"
-        # "macrophage_buffer1_stability2"
-        # "macrophage_buffer1_stability3"
-        # "macrophage_buffer1_stability4"
-        # "macrophage_buffer1_stability5"
-        # "macrophage_buffer1_stability6"
-        # "macrophage_buffer1_stability7"
-        # "macrophage_buffer1_stability8"
-        # "macrophage_buffer1_stability9"
-        # "macrophage_buffer1_stability10"
-        # "macrophage_buffer2_stability1"
-        # "macrophage_buffer2_stability2"
-        # "macrophage_buffer2_stability3"
-        # "macrophage_buffer2_stability4"
-        # "macrophage_buffer2_stability5"
-        # "macrophage_buffer2_stability6"
-        # "macrophage_buffer2_stability7"
-        # "macrophage_buffer2_stability8"
-        # "macrophage_buffer2_stability9"
-        # "macrophage_buffer2_stability10"
-        # "macrophage_buffer3_stability1"
-        # "macrophage_buffer3_stability2"
-        # "macrophage_buffer3_stability3"
-        # "macrophage_buffer3_stability4"
-        # "macrophage_buffer3_stability5"
-        # "macrophage_buffer3_stability6"
-        # "macrophage_buffer3_stability7"
-        # "macrophage_buffer3_stability8"
-        # "macrophage_buffer3_stability9"
-        # "macrophage_buffer3_stability10"
-        # "macrophage_buffer4_stability1"
-        # "macrophage_buffer4_stability2"
-        # "macrophage_buffer4_stability3"
-        # "macrophage_buffer4_stability4"
-        # "macrophage_buffer4_stability5"
-        # "macrophage_buffer4_stability6"
-        # "macrophage_buffer4_stability7"
-        # "macrophage_buffer4_stability8"
-        # "macrophage_buffer4_stability9"
-        # "macrophage_buffer4_stability10"
     )
 
     # Specify the target name for the model prediction 
     # (i.e. for file "macrophage_vs_K562_inferred_network_raw_xgb_pred.tsv" enter "K562")
     local TARGET_NAME=( \
-        "macrophage" \
+        # "macrophage" \
         # "K562" \
-        # "mESC"
+        "mESC"
     )
 
     # Select the name of the feature sets to analyze
     local FEATURE_SETS=( \
-        # "inferred_network_raw" \
-        "inferred_network_w_string" \
+        "inferred_score_df.parquet" \
+        # "inferred_network_w_string" \
         # "inferred_network_string_scores_only" \
         # "inferred_network_w_string_no_tf"
     )
 
     # Select the ground truth based on the cell type of the TARGET_NAME
     local GROUND_TRUTHS=( \
-        "${MACROPHAGE_RN204_CHIPSEQ}" \
+        # Macrophage Ground Truths
+        # "${MACROPHAGE_RN204_CHIPSEQ}" \
+
+        # K562 Ground Truths
         # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
         # "${K562_RN119_CHIP_AND_KO}" \
-        # "${MESC_RN111_CHIPSEQ}" \
+
+        # mESC Ground Truths
+        "${MESC_RN111_CHIPSEQ}" \
         # "${MESC_RN112_LOGOF}" \
         # "${MESC_RN114_CHIPX_ESCAPE}" \
         # "${MESC_RN115_LOGOF_ESCAPE}"
     )
 
-    # Select the name of the ground truths uncommented above
     local GROUND_TRUTH_NAMES=( \
-        "RN204_ChIPSeq" \
+        # Macrophage Ground Truths
+        # "RN204_ChIPSeq" \
+
+        # K562 Ground Truths
         # "RN117_ChIPSeq" \
         # "RN118_KO_KNOCK_TF" \
         # "RN119_CHIP_AND_KO" \
-        # "MESC_RN111_CHIPSEQ" \
-        # "MESC_RN112_LOGOF" \
-        # "MESC_RN114_CHIPX_ESCAPE" \
-        # "MESC_RN115_LOGOF_ESCAPE"
+
+        # mESC Ground Truths
+        "RN111_CHIPSEQ" \
+        "RN112_LOGOF" \
+        "RN114_CHIPX_ESCAPE" \
+        "RN115_LOGOF_ESCAPE"
     )
 
-    # Run for each selected sample
-    for SAMPLE_NAME in "${SAMPLE_NAMES[@]}"; do
+    local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
 
-        local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
+    # Run for each feature set for the current sample
+    for FEATURE_SET in "${FEATURE_SETS[@]}"; do
 
-        # Run for each feature set for the current sample
-        for FEATURE_SET in "${FEATURE_SETS[@]}"; do
+        # Compare the inferred network against each ground truth file for the cell type
+        for i in "${!GROUND_TRUTHS[@]}"; do
+            local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
+            local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
+            local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
 
-            # Compare the inferred network against each ground truth file for the cell type
-            for i in "${!GROUND_TRUTHS[@]}"; do
-                local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
-                local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
-                local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
-
-                # Submit the job for each sample
-                submit_job \
-                    "$INFERRED_NET_FILE" \
-                    "$CELL_TYPE" \
-                    "$TARGET_NAME" \
-                    "$SAMPLE_NAME" \
-                    "$GROUND_TRUTH_NAME" \
-                    "$FEATURE_SET" \
-                    "$INFERRED_NET_DIR" \
-                    "$GROUND_TRUTH_FILE"
-            done
+            # Submit the job for each sample
+            submit_job \
+                "$INFERRED_NET_FILE" \
+                "$CELL_TYPE" \
+                "$TARGET_NAME" \
+                "$SAMPLE_NAME" \
+                "$GROUND_TRUTH_NAME" \
+                "$FEATURE_SET" \
+                "$INFERRED_NET_DIR" \
+                "$GROUND_TRUTH_FILE"
         done
     done
 }
@@ -171,48 +136,12 @@ run_macrophage() {
 run_mESC(){
     local CELL_TYPE="mESC"
 
-    local SAMPLE_NAMES=(
-        # "1000_cells_E7.5_rep1"
-        # "1000_cells_E7.5_rep2"
-        # "1000_cells_E7.75_rep1"
-        # "1000_cells_E8.0_rep1"
-        # "1000_cells_E8.0_rep2"
-        # "1000_cells_E8.5_CRISPR_T_KO"
-        # "1000_cells_E8.5_CRISPR_T_WT"
-        # "2000_cells_E7.5_rep1"
-        # "2000_cells_E8.0_rep1"
-        # "2000_cells_E8.0_rep2"
-        # "2000_cells_E8.5_CRISPR_T_KO"
-        # "2000_cells_E8.5_CRISPR_T_WT"
-        # "3000_cells_E7.5_rep1"
-        # "3000_cells_E8.0_rep1"
-        # "3000_cells_E8.0_rep2"
-        # "3000_cells_E8.5_CRISPR_T_KO"
-        # "3000_cells_E8.5_CRISPR_T_WT"
-        # "4000_cells_E7.5_rep1"
-        # "4000_cells_E8.0_rep1"
-        # "4000_cells_E8.0_rep2"
-        # "4000_cells_E8.5_CRISPR_T_KO"
-        # "4000_cells_E8.5_CRISPR_T_WT"
-        # "5000_cells_E7.5_rep1"
-        # "5000_cells_E8.5_CRISPR_T_KO"
-        # "70_percent_subsampled_1"
-        # "70_percent_subsampled_2"
-        # "70_percent_subsampled_3"
-        # "70_percent_subsampled_4"
-        # "70_percent_subsampled_5"
-        # "70_percent_subsampled_6"
-        # "70_percent_subsampled_7"
-        # "70_percent_subsampled_8"
-        # "70_percent_subsampled_9"
-        # "70_percent_subsampled_10"
+    local SAMPLE_NAME=(
         "filtered_L2_E7.5_rep1"
         # "filtered_L2_E7.5_rep2"
         # "filtered_L2_E7.75_rep1"
         # "filtered_L2_E8.0_rep1"
         # "filtered_L2_E8.0_rep2"
-        # "filtered_L2_E8.5_CRISPR_T_KO"
-        # "filtered_L2_E8.5_CRISPR_T_WT"
         # "filtered_L2_E8.5_rep1"
         # "filtered_L2_E8.5_rep2"
         # "filtered_L2_E8.75_rep1"
@@ -228,69 +157,79 @@ run_mESC(){
     )
 
     local FEATURE_SETS=( \
+        "inferred_score_df" \
+        # "inferred_network_enrich_feat" \
+        # "inferred_network" \
         # "inferred_network_raw" \
-        "inferred_network_w_string" \
+        # "inferred_network_w_string" \
         # "inferred_network_string_scores_only"
     )
 
     local GROUND_TRUTHS=( \
+        # Macrophage Ground Truths
         # "${MACROPHAGE_RN204_CHIPSEQ}" \
+
+        # K562 Ground Truths
         # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
         # "${K562_RN119_CHIP_AND_KO}" \
+
+        # mESC Ground Truths
         "${MESC_RN111_CHIPSEQ}" \
-        "${MESC_RN112_LOGOF}" \
+        # "${MESC_RN112_LOGOF}" \
         # "${MESC_RN114_CHIPX_ESCAPE}" \
         # "${MESC_RN115_LOGOF_ESCAPE}"
     )
 
     local GROUND_TRUTH_NAMES=( \
+        # Macrophage Ground Truths
         # "RN204_ChIPSeq" \
+
+        # K562 Ground Truths
         # "RN117_ChIPSeq" \
         # "RN118_KO_KNOCK_TF" \
         # "RN119_CHIP_AND_KO" \
-        "MESC_RN111_CHIPSEQ" \
-        "MESC_RN112_LOGOF" \
-        # "MESC_RN114_CHIPX_ESCAPE" \
-        # "MESC_RN115_LOGOF_ESCAPE"
+
+        # mESC Ground Truths
+        "RN111_CHIPSEQ" \
+        # "RN112_LOGOF" \
+        # "RN114_CHIPX_ESCAPE" \
+        # "RN115_LOGOF_ESCAPE"
     )
 
-    # Run for each sample of the cell type
-    for SAMPLE_NAME in "${SAMPLE_NAMES[@]}"; do
+    # Specify the location fo the model predictions for the current sample
+    local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
 
-        # Specify the location fo the model predictions for the current sample
-        local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
+    # Run for each feature set
+    for FEATURE_SET in "${FEATURE_SETS[@]}"; do
 
-        # Run for each feature set
-        for FEATURE_SET in "${FEATURE_SETS[@]}"; do
+        # Compare the model predictions for the cell type against each ground truth file for the target
+        for i in "${!GROUND_TRUTHS[@]}"; do
+            local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
+            local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
+            
+            local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
 
-            # Compare the model predictions for the cell type against each ground truth file for the target
-            for i in "${!GROUND_TRUTHS[@]}"; do
-                local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
-                local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
-                
-                local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
-
-                # Submit the job for each sample
-                submit_job \
-                    "$INFERRED_NET_FILE" \
-                    "$CELL_TYPE" \
-                    "$TARGET_NAME" \
-                    "$SAMPLE_NAME" \
-                    "$GROUND_TRUTH_NAME" \
-                    "$FEATURE_SET" \
-                    "$INFERRED_NET_DIR" \
-                    "$GROUND_TRUTH_FILE"
-            done
+            # Submit the job for each sample
+            submit_job \
+                "$INFERRED_NET_FILE" \
+                "$CELL_TYPE" \
+                "$TARGET_NAME" \
+                "$SAMPLE_NAME" \
+                "$GROUND_TRUTH_NAME" \
+                "$FEATURE_SET" \
+                "$INFERRED_NET_DIR" \
+                "$GROUND_TRUTH_FILE"
         done
     done
+
 }
 
 run_K562(){
     local CELL_TYPE="K562"
 
     
-    local SAMPLE_NAMES=( \
+    local SAMPLE_NAME=( \
         "K562_human_filtered"
     )
 
@@ -298,13 +237,13 @@ run_K562(){
     # (i.e. for file "K562_vs_macrophage_inferred_network_raw_xgb_pred.tsv" enter "macrophage")
     local TARGET_NAME=( \
         # "macrophage" \
-        "K562" \
-        # "mESC"
+        # "K562" \
+        "mESC"
     )
 
     # Select the name of the feature sets to analyze
     local FEATURE_SETS=( \
-        # "inferred_network_raw" \
+        "inferred_network_raw" \
         "inferred_network_w_string"
         # "inferred_network_string_scores_only" \
         # "inferred_network_w_string_no_tf"
@@ -312,60 +251,158 @@ run_K562(){
 
     # Select the ground truth based on the cell type of the TARGET_NAME
     local GROUND_TRUTHS=( \
+        # Macrophage Ground Truths
         # "${MACROPHAGE_RN204_CHIPSEQ}" \
+
+        # K562 Ground Truths
         # "${K562_RN117_CHIPSEQ}" \
         # "${K562_RN118_KNOCKTF}" \
-        "${K562_RN119_CHIP_AND_KO}" \
-        # "${MESC_RN111_CHIPSEQ}" \
-        # "${MESC_RN112_LOGOF}" \
-        # "${MESC_RN114_CHIPX_ESCAPE}" \
-        # "${MESC_RN115_LOGOF_ESCAPE}"
+        # "${K562_RN119_CHIP_AND_KO}" \
 
+        # mESC Ground Truths
+        "${MESC_RN111_CHIPSEQ}" \
+        "${MESC_RN112_LOGOF}" \
+        "${MESC_RN114_CHIPX_ESCAPE}" \
+        "${MESC_RN115_LOGOF_ESCAPE}"
     )
 
-    # Select the name of the ground truths uncommented above
     local GROUND_TRUTH_NAMES=( \
+        # Macrophage Ground Truths
         # "RN204_ChIPSeq" \
+
+        # K562 Ground Truths
         # "RN117_ChIPSeq" \
         # "RN118_KO_KNOCK_TF" \
-        "RN119_CHIP_AND_KO" \
-        # "MESC_RN111_CHIPSEQ" \
-        # "MESC_RN112_LOGOF" \
-        # "MESC_RN114_CHIPX_ESCAPE" \
-        # "MESC_RN115_LOGOF_ESCAPE"
+        # "RN119_CHIP_AND_KO" \
+
+        # mESC Ground Truths
+        "RN111_CHIPSEQ" \
+        "RN112_LOGOF" \
+        "RN114_CHIPX_ESCAPE" \
+        "RN115_LOGOF_ESCAPE"
     )
 
-    # Run for each sample of the cell type
-    for SAMPLE_NAME in "${SAMPLE_NAMES[@]}"; do
+    # Specify the location fo the model predictions for the current sample
+    local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
 
-        # Specify the location fo the model predictions for the current sample
-        local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
+    # Run for each feature set
+    for FEATURE_SET in "${FEATURE_SETS[@]}"; do
 
-        # Run for each feature set
-        for FEATURE_SET in "${FEATURE_SETS[@]}"; do
+        # Compare the model predictions for the cell type against each ground truth file for the target
+        for i in "${!GROUND_TRUTHS[@]}"; do
+            local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
+            local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
+            
+            local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
 
-            # Compare the model predictions for the cell type against each ground truth file for the target
-            for i in "${!GROUND_TRUTHS[@]}"; do
-                local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
-                local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
-                
-                local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
-
-                # Submit the job for each sample
-                submit_job \
-                    "$INFERRED_NET_FILE" \
-                    "$CELL_TYPE" \
-                    "$TARGET_NAME" \
-                    "$SAMPLE_NAME" \
-                    "$GROUND_TRUTH_NAME" \
-                    "$FEATURE_SET" \
-                    "$INFERRED_NET_DIR" \
-                    "$GROUND_TRUTH_FILE"
-            done
+            # Submit the job for each sample
+            submit_job \
+                "$INFERRED_NET_FILE" \
+                "$CELL_TYPE" \
+                "$TARGET_NAME" \
+                "$SAMPLE_NAME" \
+                "$GROUND_TRUTH_NAME" \
+                "$FEATURE_SET" \
+                "$INFERRED_NET_DIR" \
+                "$GROUND_TRUTH_FILE"
         done
     done
 }
 
-run_mESC
+
+run_combined_model(){
+    local CELL_TYPE="combined_inferred_dfs"
+
+    local SAMPLE_NAME=(
+        "filtered_L2_E7.5_rep1"
+        # "filtered_L2_E7.5_rep2"
+        # "filtered_L2_E7.75_rep1"
+        # "filtered_L2_E8.0_rep1"
+        # "filtered_L2_E8.0_rep2"
+        # "filtered_L2_E8.5_rep1"
+        # "filtered_L2_E8.5_rep2"
+        # "filtered_L2_E8.75_rep1"
+        # "filtered_L2_E8.75_rep2"
+    )
+
+    # Specify the target name for the model prediction 
+    # (i.e. for file "macrophage_vs_K562_inferred_network_raw_xgb_pred.tsv" enter "K562")
+    local TARGET_NAME=( \
+        # "macrophage" \
+        # "K562" \
+        "mESC"
+    )
+
+    local FEATURE_SETS=( \
+        "inferred_score_df" \
+        # "inferred_network_enrich_feat" \
+        # "inferred_network" \
+        # "inferred_network_raw" \
+        # "inferred_network_w_string" \
+        # "inferred_network_string_scores_only"
+    )
+
+    local GROUND_TRUTHS=( \
+        # Macrophage Ground Truths
+        # "${MACROPHAGE_RN204_CHIPSEQ}" \
+
+        # K562 Ground Truths
+        # "${K562_RN117_CHIPSEQ}" \
+        # "${K562_RN118_KNOCKTF}" \
+        # "${K562_RN119_CHIP_AND_KO}" \
+
+        # mESC Ground Truths
+        # "${MESC_RN111_CHIPSEQ}" \
+        # "${MESC_RN112_LOGOF}" \
+        # "${MESC_RN114_CHIPX_ESCAPE}" \
+        "${MESC_RN115_LOGOF_ESCAPE}"
+    )
+
+    local GROUND_TRUTH_NAMES=( \
+        # Macrophage Ground Truths
+        # "RN204_ChIPSeq" \
+
+        # K562 Ground Truths
+        # "RN117_ChIPSeq" \
+        # "RN118_KO_KNOCK_TF" \
+        # "RN119_CHIP_AND_KO" \
+
+        # mESC Ground Truths
+        # "RN111_CHIPSEQ" \
+        # "RN112_LOGOF" \
+        # "RN114_CHIPX_ESCAPE" \
+        "RN115_LOGOF_ESCAPE"
+    )
+
+    # Specify the location fo the model predictions for the current sample
+    local INFERRED_NET_DIR="/gpfs/Labs/Uzun/SCRIPTS/PROJECTS/2024.SINGLE_CELL_GRN_INFERENCE.MOELLER/output/${CELL_TYPE}/${SAMPLE_NAME}/model_predictions"
+
+    # Run for each feature set
+    for FEATURE_SET in "${FEATURE_SETS[@]}"; do
+
+        # Compare the model predictions for the cell type against each ground truth file for the target
+        for i in "${!GROUND_TRUTHS[@]}"; do
+            local GROUND_TRUTH_FILE=${GROUND_TRUTHS[$i]}
+            local GROUND_TRUTH_NAME=${GROUND_TRUTH_NAMES[$i]}
+            
+            local INFERRED_NET_FILE="${CELL_TYPE}_vs_${TARGET_NAME}_${FEATURE_SET}_xgb_pred.tsv"
+
+            # Submit the job for each sample
+            submit_job \
+                "$INFERRED_NET_FILE" \
+                "$CELL_TYPE" \
+                "$TARGET_NAME" \
+                "$SAMPLE_NAME" \
+                "$GROUND_TRUTH_NAME" \
+                "$FEATURE_SET" \
+                "$INFERRED_NET_DIR" \
+                "$GROUND_TRUTH_FILE"
+        done
+    done
+
+}
+
+run_combined_model
+# run_mESC
 # run_K562
 # run_macrophage

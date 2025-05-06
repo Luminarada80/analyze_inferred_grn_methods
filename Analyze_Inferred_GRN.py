@@ -43,7 +43,7 @@ def load_inferred_network_df(
         separator (str):
             Pandas separator to use when loading in the dataframe
     """
-    return pd.read_csv(inferred_network_file, sep=separator, header=0)
+    return pd.read_csv(inferred_network_file, sep=separator, header=0, index_col=None)
 
 def standardize_ground_truth_format(ground_truth_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -241,7 +241,7 @@ def main():
     
     # PROCESSING EACH SAMPLE
     sample_list = []
-    for i, sample in enumerate(inferred_network_dict[METHOD_NAME]):   
+    for i, sample in enumerate(list(inferred_network_dict[METHOD_NAME].keys())):   
         logging.info(f'\tAnalyzing {sample}')
         sample_list.append(sample)
         
@@ -252,24 +252,29 @@ def main():
         logging.info("\t\tLoading the inferred network")
         inferred_network_df = load_inferred_network_df(inferred_network_file, sep)
         
-        logging.info('\t\tStandardizing the DataFrame to "Source", "Target", "Score" columns')
-        if METHOD_NAME == "CELL_ORACLE":
-            inferred_network_df = grn_formatting.create_standard_dataframe(
-                inferred_network_df, source_col='source', target_col='target', score_col='coef_abs'
-            )
+        # logging.info('\t\tStandardizing the DataFrame to "Source", "Target", "Score" columns')
+        # if METHOD_NAME == "CELL_ORACLE":
+        #     inferred_network_df = grn_formatting.create_standard_dataframe(
+        #         inferred_network_df, source_col='source', target_col='target', score_col='coef_abs'
+        #     )
             
-        elif METHOD_NAME == "CUSTOM_GRN":
-            inferred_network_df = grn_formatting.create_standard_dataframe(
-                inferred_network_df, source_col='source_id', target_col='target_id', score_col='score'
-            )
-            
-        else:
-            # print(inferred_network_df.head())
-            inferred_network_df = grn_formatting.create_standard_dataframe(
-                inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
-            )
+        # elif METHOD_NAME.upper() == "CUSTOM_GRN":
+        inferred_network_df = grn_formatting.create_standard_dataframe(
+            inferred_network_df, source_col='source_id', target_col='target_id', score_col='score'
+        )
         
-        # ======================= PREPROCESSING ============================
+        # elif METHOD_NAME == "LINGER":
+        #     inferred_network_df = grn_formatting.create_standard_dataframe(
+        #         inferred_network_df
+        #     )
+            
+        # else:
+        #     # print(inferred_network_df.head())
+        #     inferred_network_df = grn_formatting.create_standard_dataframe(
+        #         inferred_network_df, source_col='Source', target_col='Target', score_col='Score'
+        #     )
+        
+        # # ======================= PREPROCESSING ============================
         sample_ground_truth = ground_truth.copy()
         
         logging.info("\t\tSplitting inferred edges based on if the edges are in the ground truth")
@@ -299,9 +304,6 @@ def main():
             sample_ground_truth, inferred_network_df
         )
         
-
-        
-
         sample_ground_truth, inferred_network_df = grn_stats.classify_interactions_by_threshold(
             sample_ground_truth,
             inferred_network_df,
@@ -363,7 +365,7 @@ def main():
         plotting.plot_multiple_histogram_with_thresholds(
             histogram_ground_truth_dict,
             histogram_inferred_network_dict,
-            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/histogram_with_threshold',
+            save_path=f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/histogram_with_threshold.png',
             lower_threshold=0.5
             )
 
@@ -381,23 +383,24 @@ def main():
             random_method="uniform_distribution"
         )
         
-        # # Record the y_true and y_scores for the current sample to plot all sample AUROC and AUPRC between methods
-        # total_method_confusion_scores[METHOD_NAME]['y_true'].append(confusion_matrix_score_dict['y_true'])
-        # total_method_confusion_scores[METHOD_NAME]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
+        # Record the y_true and y_scores for the current sample to plot all sample AUROC and AUPRC between methods
+        total_method_confusion_scores[METHOD_NAME]['y_true'].append(confusion_matrix_score_dict['y_true'])
+        total_method_confusion_scores[METHOD_NAME]['y_scores'].append(confusion_matrix_score_dict['y_scores'])
         
         # Extend the list with values to avoid nesting
-        randomized_method_dict[METHOD_NAME]['normal_y_true'].extend(confusion_matrix_score_dict['y_true'])
-        randomized_method_dict[METHOD_NAME]['normal_y_scores'].extend(confusion_matrix_score_dict['y_scores'])
+        randomized_method_dict[METHOD_NAME]['normal_y_true'].append(confusion_matrix_score_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['normal_y_scores'].append(confusion_matrix_score_dict['y_scores'])
 
-        randomized_method_dict[METHOD_NAME]['randomized_y_true'].extend(uniform_confusion_matrix_dict['y_true'])
-        randomized_method_dict[METHOD_NAME]['randomized_y_scores'].extend(uniform_confusion_matrix_dict['y_scores'])
+        randomized_method_dict[METHOD_NAME]['randomized_y_true'].append(uniform_confusion_matrix_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['randomized_y_scores'].append(uniform_confusion_matrix_dict['y_scores'])
         
-        randomized_method_dict[METHOD_NAME]['balanced_normal_y_true'].extend(balanced_confusion_matrix_score_dict['y_true'])
-        randomized_method_dict[METHOD_NAME]['balanced_normal_y_scores'].extend(balanced_confusion_matrix_score_dict['y_scores'])
+        randomized_method_dict[METHOD_NAME]['balanced_normal_y_true'].append(balanced_confusion_matrix_score_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['balanced_normal_y_scores'].append(balanced_confusion_matrix_score_dict['y_scores'])
 
-        randomized_method_dict[METHOD_NAME]['balanced_randomized_y_true'].extend(balanced_uniform_confusion_matrix_dict['y_true'])
-        randomized_method_dict[METHOD_NAME]['balanced_randomized_y_scores'].extend(balanced_uniform_confusion_matrix_dict['y_scores'])
+        randomized_method_dict[METHOD_NAME]['balanced_randomized_y_true'].append(balanced_uniform_confusion_matrix_dict['y_true'])
+        randomized_method_dict[METHOD_NAME]['balanced_randomized_y_scores'].append(balanced_uniform_confusion_matrix_dict['y_scores'])
 
+        
         
         sample_randomized_method_dict = {
             METHOD_NAME: {
@@ -431,7 +434,11 @@ def main():
     
     # logging.info(f'\tPlotting {METHOD_NAME.lower()} original vs randomized AUROC and AUPRC for all samples')    
     # plotting.plot_all_samples_auroc_auprc(total_method_confusion_scores, sample_list, f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc.png')
-                
+    # plotting.plot_boxplot_auroc_auprc_comparison(
+    #     randomized_method_dict[METHOD_NAME],
+    #     METHOD_NAME,
+    #     f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{METHOD_NAME.lower()}_randomized_auroc_auprc_boxplots.png'
+    # )                
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(message)s')  
     

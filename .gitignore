@@ -14,3 +14,4 @@ LOGS/
 *.tsv
 *.txt
 *.csv
+*.out

@@ -14,20 +14,28 @@ METHOD_NAME="CUSTOM_GRN"
 conda activate grn_analysis
 
 # Run the Python script with the selected parameters.
-echo "python3 $PROJECT_DIR/Analyze_Inferred_GRN.py "
-echo "    --inferred_net_filename ${INFERRED_NET_FILE} "
-echo "    --method_name $METHOD_NAME "
-echo "    --batch_name ${CELL_TYPE}_vs_${TARGET_NAME}/${SAMPLE_NAME}/${GROUND_TRUTH_NAME}/${INFERRED_NET_NAME}/${FEATURE_SET} "
-echo "    --method_input_path $INFERRED_NET_DIR "
-echo "    --ground_truth_path $GROUND_TRUTH_FILE"
+# echo "python3 $PROJECT_DIR/Analyze_Inferred_GRN.py "
+# echo "    --inferred_net_filename ${INFERRED_NET_FILE} "
+# echo "    --method_name $METHOD_NAME "
+# echo "    --batch_name ${FEATURE_SET}/${CELL_TYPE}/${TARGET_NAME}/${GROUND_TRUTH_NAME}/${SAMPLE_NAME} "
+# echo "    --method_input_path $INFERRED_NET_DIR "
+# echo "    --ground_truth_path $GROUND_TRUTH_FILE"
+
+# # Run the Python script with the selected parameters.
+# python3 "$PROJECT_DIR/Analyze_Inferred_GRN.py" \
+#     --inferred_net_filename "$INFERRED_NET_FILE" \
+#     --method_name "$METHOD_NAME" \
+#     --batch_name "${FEATURE_SET}/${CELL_TYPE}/${TARGET_NAME}/${GROUND_TRUTH_NAME}/${SAMPLE_NAME}" \
+#     --method_input_path "$INFERRED_NET_DIR" \
+#     --ground_truth_path "$GROUND_TRUTH_FILE"
 
 # Run the Python script with the selected parameters.
 python3 "$PROJECT_DIR/Analyze_Inferred_GRN.py" \
-    --inferred_net_filename "$INFERRED_NET_FILE" \
+    --inferred_net_filename "combined_inferred_dfs_vs_mESC_inferred_score_df_xgb_pred.tsv" \
     --method_name "$METHOD_NAME" \
-    --batch_name "${CELL_TYPE}_vs_${TARGET_NAME}/${SAMPLE_NAME}/${GROUND_TRUTH_NAME}/${INFERRED_NET_NAME}/${FEATURE_SET}" \
-    --method_input_path "$INFERRED_NET_DIR" \
-    --ground_truth_path "$GROUND_TRUTH_FILE"
+    --batch_name "inferred_score_df/combined_inferred_dfs/mESC/RN115_LOGOF_ESCAPE" \
+    --method_input_path "$OUTPUT_FOLDER/combined_inferred_dfs/model_predictions/" \
+    --ground_truth_path "/gpfs/Labs/Uzun/DATA/PROJECTS/2024.SC_MO_TRN_DB.MIRA/REPOSITORY/CURRENT/REFERENCE_NETWORKS/RN115_LOGOF_ESCAPE_Mouse_ESC.tsv"
 
 
 
