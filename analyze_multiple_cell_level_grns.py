@@ -231,7 +231,7 @@ def process_sample(sample):
     )
     
     # Save per-sample balanced ground truth and inferred network
-    output_dir = f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/{sample}'
+    output_dir = f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/balanced_cell_level_grns/{sample}'
     os.makedirs(output_dir, exist_ok=True)
 
     balanced_ground_truth.to_csv(f'{output_dir}/balanced_ground_truth.csv', index=False)
@@ -288,6 +288,7 @@ random_accuracy_metrics = {}
 
 
 sample_list = list(inferred_network_dict[METHOD_NAME].keys())
+logging.info(f'Found {sample_list} samples for {METHOD_NAME}')
 num_workers = min(8, len(sample_list))  # or use os.cpu_count()
 
 results = []
