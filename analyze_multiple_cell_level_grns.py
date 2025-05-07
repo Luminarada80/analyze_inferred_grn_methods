@@ -230,6 +230,24 @@ def process_sample(sample):
         balanced_ground_truth, balanced_inferred_network, lower_threshold=0.5, random_method="uniform_distribution"
     )
     
+    # subsample
+    def subsample_auroc(dict):
+        result_dict = {}
+        y_scores = dict['y_scores']
+        y_true = dict['y_true']
+        
+        step = max(1, math.ceil(len(y_scores) * 0.0001))
+        idx = np.arange(0, len(y_scores), step)
+        
+        result_dict['y_true'] = y_true.iloc[idx]
+        result_dict['y_scores'] = y_scores.iloc[idx]
+        
+        return dict
+    
+    confusion_matrix_score_dict = subsample_auroc(confusion_matrix_score_dict)
+    uniform_confusion_matrix_dict = subsample_auroc(uniform_confusion_matrix_dict)
+    balanced_uniform_confusion_matrix_dict = subsample_auroc(balanced_uniform_confusion_matrix_dict)
+    
     # Save per-sample balanced ground truth and inferred network
     output_dir = f'./OUTPUT/{METHOD_NAME}/{BATCH_NAME}/balanced_cell_level_grns/{sample}'
     os.makedirs(output_dir, exist_ok=True)
@@ -288,7 +306,7 @@ random_accuracy_metrics = {}
 
 
 sample_list = list(inferred_network_dict[METHOD_NAME].keys())
-logging.info(f'Found {sample_list} samples for {METHOD_NAME}')
+logging.info(f'Found {len(sample_list)} samples for {METHOD_NAME}')
 num_workers = min(8, len(sample_list))  # or use os.cpu_count()
 
 results = []
